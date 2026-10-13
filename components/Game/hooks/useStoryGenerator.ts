@@ -494,11 +494,112 @@ export function useStoryGenerator({
 
     processingUserInputRef.current = true;
     setIsLoading(true);
+
+    let shouldContinueStory = false;
+
+
     try {
       // Append user input to the end of the existing lines
       const baseLines = lines.slice(0, currentLineIdx + 1);
       const playerCharacter = getPlayerCharacter(project);
+
+      // 원본 장면을 읽기만 합니다.
+      const guardScene = getScene(project, currentSceneId);
+
+      const guardResponse = await fetch('/api/gen/story/guard', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          playerInput: input,
+          context: {
+            player: {
+              name: playerCharacter.name,
+              description: playerCharacter.description,
+            },
+            scene: {
+              title: guardScene.title,
+              prompt: guardScene.prompt,
+            },
+            characters: characters
+              .filter((character) =>
+                guardScene.characterIds.includes(character.uuid),
+              )
+              .map((character) => ({
+                name: character.name,
+                description: character.description,
+              })),
+            places: project.cartridge.places.map((place) => ({
+              name: place.name,
+              description: place.description,
+            })),
+            recentLines: getSceneLines(baseLines, currentSceneId)
+              .slice(-12)
+              .map((line) => ({
+                type: line.type,
+                text: line.text,
+              })),
+          },
+        }),
+      });
+
+      if (!guardResponse.ok) {
+        throw new Error(
+          '입력 검사를 완료하지 못했습니다. 잠시 후 다시 입력해주세요.',
+        );
+      }
+
+      const guardDecision: unknown = await guardResponse.json();
+
+      if (
+        typeof guardDecision !== 'object' ||
+        guardDecision === null ||
+        !('allowed' in guardDecision) ||
+        typeof guardDecision.allowed !== 'boolean' ||
+        !('category' in guardDecision) ||
+        typeof guardDecision.category !== 'string' ||
+        !['normal', 'meta_instruction', 'world_rewrite'].includes(
+          guardDecision.category,
+        ) ||
+        guardDecision.allowed !== (guardDecision.category === 'normal')
+      ) {
+        throw new Error('입력 검사 응답 형식이 올바르지 않습니다.');
+      }
+
+      if (!guardDecision.allowed) {
+        // 공격 원문을 이야기 기록에 넣지 않습니다.
+        // 현재 시나리오의 영어 진행 스타일에 맞춘 고정 안내입니다.
+        const refusalLine: DisplayLine = {
+          type: 'narration',
+          text:
+            'The audience remains unchanged. Your words do not alter ' +
+            'the world or your role in it. The discussion awaits ' +
+            'your next in-world response.',
+          metadata: {
+            shouldPause: true,
+          },
+        };
+
+        const guardedLines = [...baseLines, refusalLine];
+
+        setLines(guardedLines);
+        setCurrentLineIdx(guardedLines.length - 1);
+        lastChainedLengthRef.current = guardedLines.length;
+
+        const categoryLabel =
+          guardDecision.category === 'meta_instruction'
+            ? '메타 지시'
+            : '세계관 변경';
+
+        addToast(`입력 차단: ${categoryLabel}`);
+
+        return;
+      }
+
+      // 정상 입력만 아래의 원본 처리 흐름으로 전달합니다.
       const userLine: DisplayLine = {
+
         type: 'player',
         text: input,
         characterName: playerCharacter.name,
@@ -507,8 +608,9 @@ export function useStoryGenerator({
 
       let newLines = [...baseLines, userLine];
 
-      // Immediately show the user input to the user
+      // 정상 판정을 받은 입력만 화면과 이야기 기록에 추가합니다.
       setLines(newLines);
+      shouldContinueStory = true;
       const newLineIdx = currentLineIdx + 1;
       setCurrentLineIdx(Math.min(newLineIdx, newLines.length - 1));
 
@@ -544,10 +646,13 @@ export function useStoryGenerator({
       const error = err instanceof Error ? err.message : 'Unknown error occurred';
       addToast(error);
     } finally {
-      // Allow eager generation again
       processingUserInputRef.current = false;
       setIsLoading(false);
-      handleNext();
+
+      // 차단되거나 검사에 실패한 입력은 후속 생성을 시작하지 않습니다.
+      if (shouldContinueStory) {
+        handleNext();
+      }
     }
   };
 
