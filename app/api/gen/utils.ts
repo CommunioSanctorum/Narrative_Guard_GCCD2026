@@ -14,7 +14,7 @@ export function getRequestId(request?: Request): string {
 }
 
 const DEFAULT_API_OPTIONS: ApiOptions = {
-  model: 'claude-sonnet-5',
+  model: 'claude-haiku-4-5',
   // temperature: 0.8,
   maxTokens: 1000,
 };
@@ -36,7 +36,10 @@ export async function callAnthropicAPI(
   // const { model, temperature, maxTokens } = { ...DEFAULT_API_OPTIONS, ...options };
   const { model, maxTokens } = { ...DEFAULT_API_OPTIONS, ...options };
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const baseUrl = 
+    process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com';
+  
+  const response = await fetch(`${baseUrl}/v1/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
