@@ -3,6 +3,7 @@ import { getBlankScene } from '@/app/constants';
 import { DisplayLine, DisplayLineStatus, Playthrough, StoryState } from '@/app/types';
 import { useToastStore } from '@/store/toast';
 import { apiClient } from '@/utils/api';
+import { LABEL_NAMES, parseGuardResult } from '@/utils/narrativeGuard';
 import { getPlayerCharacter, getScene } from '@/utils/game';
 import { getLanguageShort, translateTexts } from '@/utils/hooks/useLocalTranslator';
 import { generateSceneUuid } from '@/utils/uuid';
@@ -503,97 +504,55 @@ export function useStoryGenerator({
       const baseLines = lines.slice(0, currentLineIdx + 1);
       const playerCharacter = getPlayerCharacter(project);
 
-      // 원본 장면을 읽기만 합니다.
       const guardScene = getScene(project, currentSceneId);
-
+      const npcCharacters = characters.filter(character =>
+        guardScene.characterIds.includes(character.uuid) && character.uuid !== playerCharacter.uuid);
       const guardResponse = await fetch('/api/gen/story/guard', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerInput: input,
           context: {
-            player: {
-              name: playerCharacter.name,
-              description: playerCharacter.description,
+            global: {
+              style: style.prompt || '',
+              description: project.settings.longDescription || '',
+              genre: project.settings.genre || '',
             },
-            scene: {
-              title: guardScene.title,
-              prompt: guardScene.prompt,
-            },
-            characters: characters
-              .filter((character) =>
-                guardScene.characterIds.includes(character.uuid),
-              )
-              .map((character) => ({
-                name: character.name,
-                description: character.description,
-              })),
-            places: project.cartridge.places.map((place) => ({
-              name: place.name,
-              description: place.description,
+            language: getLanguageShort(),
+            player: { name: playerCharacter.name, description: playerCharacter.description },
+            scene: { title: guardScene.title, prompt: guardScene.prompt || '' },
+            characters: npcCharacters.map(character => ({name: character.name, description: character.description})),
+            places: project.cartridge.places.map(place => ({name: place.name, description: place.description})),
+            recentLines: baseLines.slice(-40).map(line => ({
+              type: line.type, text: line.text, characterName: line.characterName,
             })),
-            recentLines: getSceneLines(baseLines, currentSceneId)
-              .slice(-12)
-              .map((line) => ({
-                type: line.type,
-                text: line.text,
-              })),
+            priorPlayerStatements: baseLines.filter(line => line.type === 'player').slice(-20).map(line => line.text),
+            eventConditions: guardScene.triggers.flatMap(trigger =>
+              trigger.type === 'action' ? [trigger.condition] : []),
           },
         }),
       });
-
       if (!guardResponse.ok) {
-        throw new Error(
-          '입력 검사를 완료하지 못했습니다. 잠시 후 다시 입력해주세요.',
-        );
+        throw new Error('입력 검사를 완료하지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
-
-      const guardDecision: unknown = await guardResponse.json();
-
-      if (
-        typeof guardDecision !== 'object' ||
-        guardDecision === null ||
-        !('allowed' in guardDecision) ||
-        typeof guardDecision.allowed !== 'boolean' ||
-        !('category' in guardDecision) ||
-        typeof guardDecision.category !== 'string' ||
-        !['normal', 'meta_instruction', 'world_rewrite'].includes(
-          guardDecision.category,
-        ) ||
-        guardDecision.allowed !== (guardDecision.category === 'normal')
-      ) {
-        throw new Error('입력 검사 응답 형식이 올바르지 않습니다.');
-      }
-
+      const guardDecision = parseGuardResult(await guardResponse.json(), npcCharacters.map(c => c.name));
       if (!guardDecision.allowed) {
-        // 공격 원문을 이야기 기록에 넣지 않습니다.
-        // 현재 시나리오의 영어 진행 스타일에 맞춘 고정 안내입니다.
-        const refusalLine: DisplayLine = {
-          type: 'narration',
-          text:
-            'The audience remains unchanged. Your words do not alter ' +
-            'the world or your role in it. The discussion awaits ' +
-            'your next in-world response.',
-          metadata: {
-            shouldPause: true,
-          },
-        };
-
-        const guardedLines = [...baseLines, refusalLine];
-
+        // Debug UI only: all detected attack labels are shown, never stored in story history.
+        addToast(`공격 감지: ${guardDecision.labels.map(label => LABEL_NAMES[label]).join(' · ')}`);
+        if (guardDecision.responseSource === 'fallback') {
+          addToast('서사 반응 생성 실패: 임시 안내로 대체되었습니다.');
+        }
+        const reactionLines = guardDecision.lines.map(line => ({
+          ...line,
+          ...(line.type === 'character'
+            ? {characterId: npcCharacters.find(c => c.name === line.characterName)?.uuid}
+            : {}),
+        }));
+        const guardedLines = [...baseLines, ...reactionLines];
         setLines(guardedLines);
-        setCurrentLineIdx(guardedLines.length - 1);
+        // Show the first reaction line, not only the last. The final line pauses for input.
+        setCurrentLineIdx(baseLines.length);
         lastChainedLengthRef.current = guardedLines.length;
-
-        const categoryLabel =
-          guardDecision.category === 'meta_instruction'
-            ? '메타 지시'
-            : '세계관 변경';
-
-        addToast(`입력 차단: ${categoryLabel}`);
-
         return;
       }
 
