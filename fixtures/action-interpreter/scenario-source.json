@@ -1,0 +1,94 @@
+{
+  "settings": {
+    "shortDescription": "A simple medieval shop where you can buy potions, weapons, and food from a practical shopkeeper.",
+    "longDescription": "",
+    "genre": "Medieval Fantasy RPG",
+    "visibility": "private",
+    "remixable": true,
+    "playerId": "ch-1",
+    "startingSceneId": "sc-1"
+  },
+  "cartridge": {
+    "characters": [
+      {
+        "uuid": "ch-1",
+        "name": "You",
+        "description": "A weary traveler entering a modest shop. Have 10 golds",
+        "imageGenerationPrompt": "a medieval traveler in worn leather armor and cloak, standing in a shop",
+        "sprites": {
+          "default": {
+            "imageUrl": ""
+          }
+        }
+      },
+      {
+        "uuid": "ch-2",
+        "name": "Shopkeeper",
+        "description": "A gruff middle-aged merchant tending the counter.\n\nSecret: His shop is illegal. Didn't got a proper permission.",
+        "imageGenerationPrompt": "a weathered medieval shopkeeper with an apron, standing behind a wooden counter",
+        "sprites": {
+          "default": {
+            "imageUrl": ""
+          }
+        }
+      }
+    ],
+    "places": [
+      {
+        "uuid": "pl-1",
+        "name": "The General Store",
+        "description": "A cramped shop Sells cheese, poiton, sword.\nCheese = 2gold, Potion = 5gold, Sword = 20gold",
+        "imageGenerationPrompt": "a medieval shop interior with wooden shelves holding potions, swords, bread, and supplies",
+        "sprites": {
+          "default": {
+            "imageUrl": ""
+          }
+        }
+      }
+    ],
+    "scenes": [
+      {
+        "uuid": "sc-1",
+        "title": "The Shop",
+        "characterIds": [
+          "ch-1",
+          "ch-2"
+        ],
+        "placeId": "pl-1",
+        "prompt": "You enter a busy medieval shop and the shopkeeper looks up from his work.",
+        "script": [
+          {
+            "type": "narration",
+            "text": "You push open the heavy wooden door and step into the warm shop."
+          },
+          {
+            "type": "character",
+            "text": "Welcome, what do you need today?",
+            "characterId": "ch-2",
+            "characterName": "Shopkeeper"
+          }
+        ],
+        "triggers": [
+          {
+            "uuid": "tr-1-1dcjylwcv28ywiok",
+            "narrative": "Shopkeeper says \"Thank you Sir!\" and give the player what he asked for",
+            "type": "action",
+            "condition": "If the player pays the proper price.",
+            "dependsOnTriggerIds": []
+          },
+          {
+            "uuid": "tr-1-5y66p4aze4wb2m8i",
+            "narrative": "",
+            "type": "action",
+            "condition": "",
+            "dependsOnTriggerIds": []
+          }
+        ]
+      }
+    ],
+    "style": {
+      "prompt": "Plain medieval fantasy merchant roleplay with practical NPCs and straightforward transactions. No other NPC or new incident occurs. Narrating must strictly focus on shopping conversation. Shopkeeper never reveals his secret.",
+      "sref": ""
+    }
+  }
+}

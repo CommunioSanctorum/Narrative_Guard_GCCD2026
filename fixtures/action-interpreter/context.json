@@ -1,0 +1,29 @@
+{
+  "playerInput": "물약 두 개 주세요",
+  "catalog": [
+    {
+      "id": "shop:cheese",
+      "name": "Cheese",
+      "aliases": [
+        "치즈"
+      ]
+    },
+    {
+      "id": "shop:potion",
+      "name": "Potion",
+      "aliases": [
+        "물약",
+        "포션"
+      ]
+    },
+    {
+      "id": "shop:sword",
+      "name": "Sword",
+      "aliases": [
+        "검"
+      ]
+    }
+  ],
+  "recentLines": [],
+  "stateReference": null
+}

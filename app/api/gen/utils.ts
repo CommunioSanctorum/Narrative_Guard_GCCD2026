@@ -3,9 +3,16 @@ import { NextResponse } from 'next/server';
 
 export interface ApiOptions {
   model?: string;
-  // temperature?: number;
+
+  /**
+   * 기존 호출부 호환용 옵션.
+   * 현재 API 구현에서는 요청 본문에 전달하지 않으므로 적용되지 않는다.
+   */
+  temperature?: number;
+
   maxTokens?: number;
 }
+
 
 // Helper to get request ID from headers (set by middleware)
 export function getRequestId(request?: Request): string {

@@ -1,0 +1,13 @@
+{
+  "unit-test-results.txt": "680e0cc94b2f657254472d8a6b90add6c093ceacef8b1f1ea91e0498ad0468a4",
+  "README_KO.md": "8dd2342e0f9e54f8e901acd4a9deba4ecd0906d1c48d514574eb674d6405f47d",
+  "TEST_REPORT_KO.md": "0c2b206ac751d9fbcde72df274abe2bd0fae0e1895f1ee0688dd9416f1f08b60",
+  "tests/action-interpreter.test.mjs": "94533a9edee6875c7141280881b899caa62d12c37815394b2ca4e134879c0657",
+  "scripts/run-action-interpreter.mjs": "5fe0b49ef496a719ff1790c1ea379001eddce55a9be8d0874b7c67aa11bf6ee4",
+  "fixtures/action-interpreter/scenario-source.json": "ef48d24af3985159a34a26f8de16f3cb3191206332304c365f961b33d43b1a32",
+  "fixtures/action-interpreter/context.json": "9791f78cb4cccc43624f923b126a3b847e46c84c193b4f867f5262064318ac04",
+  "fixtures/action-interpreter/cases.json": "deb5f485f0f8886b8b2002b5448539750a96216ca5d432ebd939ad25084de20f",
+  "app/api/gen/story/interpret/route.ts": "71b0c8545bf9c8a8e08c8fb49df5bb4f9eb3399f2324432b67e3f9150691bcc8",
+  "lib/action-interpreter/core.mjs": "dfaabf0e1f13e89321c34f8bf06b83504371f5d3b36e6fcc6ff94847dc0bfed4",
+  "lib/action-interpreter/core.d.mts": "98366192af82768c547b12a9cedf7bd16a0a37531f250606c92fab163c982c35"
+}
