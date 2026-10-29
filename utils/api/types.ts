@@ -32,6 +32,7 @@ export type HintApiInputType = {
 export type StepApiOutputType = {
   lines: XmlLine[];
   endName?: string;
+  stateChange?: Record<string, unknown>;
 };
 
 export type StepApiInputType = {
