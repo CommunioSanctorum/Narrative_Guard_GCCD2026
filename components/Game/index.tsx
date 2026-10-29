@@ -28,6 +28,8 @@ import { SceneBreak } from './Screens/Scene';
 import Start from './Screens/Start';
 import ShareModal from './Share';
 import Stage from './Stage';
+import GameStatusPanel from './GameStatusPanel';
+import { normalizeGameState } from '@/app/lib/narrative-state';
 
 export default function Game({ actions }: { actions?: React.ReactNode }) {
   const {
@@ -52,6 +54,15 @@ export default function Game({ actions }: { actions?: React.ReactNode }) {
     currentPlaythrough?.projectSnapshot ?? project,
     storyState.currentScene.uuid,
   );
+  const activeProject = currentPlaythrough?.projectSnapshot ?? project;
+  const currentPlace = activeProject.cartridge.places.find((place) => place.uuid === scene.placeId);
+  // currentLine may be a cloned object when useStoryGenerator adds transient status metadata.
+  // indexOf(currentLine) then returns -1, making the status panel fall back to scenario defaults.
+  // Use the authoritative line index from the generator instead.
+  const currentLineIndex = storyState.currentLineIdx;
+  const visibleStateLine = storyState.lines.slice(0, currentLineIndex + 1).reverse().find((line) => line.metadata?.narrativeState);
+  const initialLocation = currentPlace?.name ?? activeProject.cartridge.places.find((place) => place.uuid === getScene(activeProject, activeProject.settings.startingSceneId).placeId)?.name ?? '알 수 없음';
+  const visibleGameState = normalizeGameState(visibleStateLine?.metadata?.narrativeState ?? activeProject.settings.initialGameState, initialLocation);
   const currentBackgroundSprite = getPlaceSprite(
     currentPlaythrough?.projectSnapshot ?? project,
     scene.placeId,
@@ -91,6 +102,7 @@ export default function Game({ actions }: { actions?: React.ReactNode }) {
           </div>
         )}
         <div className="relative w-full justify-center">
+          {currentPlaythrough && <GameStatusPanel state={visibleGameState} />}
           {showOutdatedWarning && outdated && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
