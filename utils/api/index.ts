@@ -351,8 +351,8 @@ class ApiClient {
     playthrough: Playthrough;
     triggers: Trigger[];
     signal?: AbortSignal;
-  }): Promise<{ lines: DisplayLine[] }> => {
-    const result = await this.request<{ lines: XmlLine[] }>(`${BASE_GEN_URL}/story/step`, {
+  }): Promise<{ lines: DisplayLine[]; stateChange?: Record<string, unknown> }> => {
+    const result = await this.request<{ lines: XmlLine[]; stateChange?: Record<string, unknown> }>(`${BASE_GEN_URL}/story/step`, {
       method: 'POST',
       body: JSON.stringify({
         project,
@@ -364,6 +364,7 @@ class ApiClient {
 
     return {
       lines: convertXmlLinesToDisplayLines(result.lines),
+      stateChange: result.stateChange,
     };
   };
 

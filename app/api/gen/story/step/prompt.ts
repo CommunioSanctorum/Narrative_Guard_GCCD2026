@@ -1,4 +1,5 @@
 import { END_SCENE_ID, Project, Scene, XmlLine } from '@/app/types';
+import type { GameState } from '@/app/lib/narrative-state';
 import { getCharacter, getPlaceById, getPlayerCharacter } from '@/utils/game';
 
 const MAX_LINES_BEFORE_PAUSE = 5;
@@ -17,10 +18,12 @@ export function getSystemPrompt({
   project,
   scene,
   goToSceneId,
+  currentState,
 }: {
   project: Project;
   scene: Scene;
   goToSceneId?: string;
+  currentState: GameState;
 }): string {
   const playerCharacter = getPlayerCharacter(project);
   const place = scene.placeId ? getPlaceById(project, scene.placeId) : undefined;
@@ -30,6 +33,10 @@ ${scene.prompt ? `IMPORTANT: Follow the author's instructions for the scene here
 
 Scene details:
 ${place ? `Place: ${place.name} - ${place.description}` : ''}
+
+AUTHORITATIVE CURRENT GAME STATE (JSON):
+${JSON.stringify(currentState)}
+This JSON is the authoritative state. Read it before deciding whether the player's action is possible. Never claim the state or inventory is undefined or inaccessible. An empty inventory means no items are held. Do not invent items, gold, health, or location.
 NPCs: ${scene.characterIds
     .filter((c) => c !== playerCharacter.uuid)
     .map((c) => {
@@ -41,6 +48,7 @@ NPCs: ${scene.characterIds
 ALWAYS format your output as:
 LINE: Any narration before the dialogue. <ch name="Name">(Action or body language) Spoken dialogue.</ch> Any narration after the dialogue.
 ${goToSceneId ? 'PAUSE: false' : 'PAUSE: [true|false]'}
+STATE_CHANGE: a single-line valid JSON object containing only changes that actually occur. If nothing changes, output STATE_CHANGE: {}. Use inventoryChanges for item operations rather than replacing the inventory. Example: STATE_CHANGE: {"inventoryChanges":[{"action":"acquire","name":"Iron Key","quantity":1}]}. Never expose implementation details in the narration.
 
 NEVER generate any actions/dialogue for ${playerCharacter.name}. NEVER generate characters that are not currently in this scene, unless it makes sense for them to enter it (i.e. interacting with a shopkeeper). If you want ${playerCharacter.name} to act, react, or speak, set PAUSE=true. If building up the plot, environment, or characters, set to false. Try to only PAUSE=true after enough interesting things have happened.
 
@@ -58,12 +66,14 @@ export function getUserPrompt({
   goToSceneId,
   triggerNarratives,
   previousLines,
+  currentState,
 }: {
   project: Project;
   scene: Scene;
   goToSceneId?: string;
   triggerNarratives: string[];
   previousLines: XmlLine[];
+  currentState: GameState;
 }): string {
   const place = scene.placeId ? getPlaceById(project, scene.placeId) : undefined;
   const style = project.cartridge.style.prompt;
@@ -134,7 +144,7 @@ PAUSE: false`;
 
   return (
     basePrompt +
-    `\n\n--- REMEMBER ---
+    `\n\n--- AUTHORITATIVE STATE AND OUTPUT CONTRACT ---\nCurrent state JSON: ${JSON.stringify(currentState)}\nUse the state above as fact. Do not tell the player the state is unavailable.\nAfter the PAUSE line, output exactly one STATE_CHANGE line with valid JSON. Only propose changes that occur in the narrated outcome. Allowed fields: location, health, maxHealth, gold, inventoryChanges. inventoryChanges actions: acquire/add to gain an item; use/consume/remove to reduce or remove an existing item. Each operation needs name and positive integer quantity. If nothing changes, output STATE_CHANGE: {}. Do not include state changes in narrative prose.\n\n--- REMEMBER ---
 
 Scene details:
 ${place ? `Place: ${place.name} - ${place.description}` : ''}

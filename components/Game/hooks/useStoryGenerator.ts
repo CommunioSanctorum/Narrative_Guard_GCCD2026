@@ -4,6 +4,7 @@ import { DisplayLine, DisplayLineStatus, Playthrough, StoryState } from '@/app/t
 import { useToastStore } from '@/store/toast';
 import { apiClient } from '@/utils/api';
 import { LABEL_NAMES, parseGuardResult } from '@/utils/narrativeGuard';
+import { appendStateHistory, createInitialStateHistory, getInitialGameState, normalizeGameState, validateStateProposal, verifyStateHistory, type GameState, type StateHistoryEntry } from '@/app/lib/narrative-state';
 import { getPlayerCharacter, getScene } from '@/utils/game';
 import { getLanguageShort, translateTexts } from '@/utils/hooks/useLocalTranslator';
 import { generateSceneUuid } from '@/utils/uuid';
@@ -230,7 +231,7 @@ export function useStoryGenerator({
         return;
       }
 
-      const { lines: stepLines } = await apiClient.generateStep({
+      const { lines: rawStepLines, stateChange } = await apiClient.generateStep({
         project: project!,
         playthrough: {
           ...currentPlaythrough!,
@@ -241,11 +242,52 @@ export function useStoryGenerator({
         triggers,
         signal,
       });
+      let stepLines = rawStepLines;
 
       // Check if aborted after API call
       if (signal.aborted) {
         console.log('Generation aborted after API call');
         return;
+      }
+
+      // State is read from the latest committed hash history, never from an LLM narrative claim.
+      const latestStateLine = [...currentLines].reverse().find((line) => line.metadata?.narrativeHistory || line.metadata?.narrativeState);
+      const stateScene = getScene(project!, currentSceneId);
+      const statePlace = project!.cartridge.places.find((place) => place.uuid === stateScene.placeId);
+      const initialState = getInitialGameState(project!, statePlace?.name ?? '알 수 없음');
+      let stateHistory = (latestStateLine?.metadata?.narrativeHistory as StateHistoryEntry[] | undefined) ?? await createInitialStateHistory(initialState);
+      let committedState: GameState = initialState;
+      let integrityValid = await verifyStateHistory(stateHistory);
+      if (integrityValid.valid) {
+        committedState = normalizeGameState(stateHistory[stateHistory.length - 1].state, initialState.location);
+        const storedState = latestStateLine?.metadata?.narrativeState;
+        if (storedState && JSON.stringify(normalizeGameState(storedState, initialState.location)) !== JSON.stringify(committedState)) {
+          integrityValid = { valid: false, reason: 'state does not match last history entry' };
+        }
+      }
+      let proposalAccepted = integrityValid.valid;
+      let rejectionReason = integrityValid.reason;
+      if (!integrityValid.valid) {
+        // A broken chain is not trusted. Re-establish a clean chain from scenario-configured defaults.
+        committedState = initialState;
+        stateHistory = await createInitialStateHistory(initialState);
+      }
+      if (integrityValid.valid && stateChange && Object.keys(stateChange).length > 0) {
+        const validLocations = new Set(project!.cartridge.places.map((place) => place.name.trim().toLocaleLowerCase()));
+        const validation = validateStateProposal(committedState, stateChange as never, validLocations);
+        proposalAccepted = validation.valid;
+        rejectionReason = validation.reason;
+        if (validation.valid) committedState = validation.state;
+      }
+      if (!proposalAccepted) {
+        // Keep the previous committed state and do not show internal validation errors to the player.
+        stepLines = stepLines.map((line, index) => index === 0 ? { ...line, text: '잠시 상황이 어긋난 듯합니다. 당신은 행동을 멈추고 주변을 다시 살핍니다.', metadata: { ...line.metadata, shouldPause: true } } : line);
+        console.warn('State proposal rejected:', rejectionReason);
+      }
+      stateHistory = await appendStateHistory(stateHistory, committedState, proposalAccepted ? 'accepted generated turn' : `rejected generated turn: ${rejectionReason ?? 'validation failed'}`, proposalAccepted, stateChange ?? null);
+      if (stepLines.length > 0) {
+        const lastIndex = stepLines.length - 1;
+        stepLines[lastIndex] = { ...stepLines[lastIndex], metadata: { ...stepLines[lastIndex].metadata, narrativeState: committedState, narrativeHistory: stateHistory, stateIntegrityValid: proposalAccepted } };
       }
 
       // Translate lines
@@ -645,6 +687,7 @@ export function useStoryGenerator({
 
   return {
     lines,
+    currentLineIdx,
     eventImageUrl,
     disabledNext: disabledNext || false,
     disabledBack: disabledBack || false,

@@ -106,6 +106,14 @@ export interface Settings {
   thumbnailImageUrl?: string;
   startingSceneId: string; // References the uuid of the starting scene
   playerId: string; // References the uuid of the player character
+  showStatusBar?: boolean; // Legacy setting; the dedicated game status panel is always displayed
+  initialGameState?: {
+    location?: string;
+    health?: number;
+    maxHealth?: number;
+    gold?: number;
+    inventory?: { id: string; name: string; quantity: number }[];
+  };
 }
 
 /* Style */
@@ -186,6 +194,9 @@ export type DisplayLine = {
     verbatim?: boolean; // TRUE if not generated
     status?: DisplayLineStatus;
     eventImageUrl?: string;
+    narrativeState?: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[] };
+    narrativeHistory?: { index: number; previousHash: string; hash: string; state: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[] }; reason: string; accepted: boolean; proposal?: unknown }[];
+    stateIntegrityValid?: boolean;
   };
 };
 
@@ -241,6 +252,7 @@ export type EditableProject = Omit<
 
 export type StoryState = {
   lines: DisplayLine[];
+  currentLineIdx: number;
   currentLine: DisplayLine;
   currentScene: Scene; // Scene based on displayed line (currentLineIdx)
   latestScene: Scene; // Scene based on the last line (where generation happens)

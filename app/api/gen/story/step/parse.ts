@@ -2,16 +2,18 @@ export interface ParsedXmlLine {
   plan?: string;
   lineContent: string;
   shouldPause: boolean;
+  stateChange?: Record<string, unknown>;
 }
 
 /**
  * Parses text containing PLAN:, LINE:, PAUSE:, and optionally END: sections
  */
 export function parseXmlFormat(text: string): ParsedXmlLine {
-  const sections = text.split(/\n(?=PLAN:|LINE:|PAUSE:|END:)/);
+  const sections = text.split(/\n(?=PLAN:|LINE:|PAUSE:|END:|STATE_CHANGE:)/);
   const planContents: string[] = [];
   const lineContents: string[] = [];
   let pauseInfo = '';
+  let stateChange: Record<string, unknown> | undefined;
 
   sections.forEach((section: string) => {
     const trimmedSection = section.trim();
@@ -27,6 +29,14 @@ export function parseXmlFormat(text: string): ParsedXmlLine {
       }
     } else if (trimmedSection.startsWith('PAUSE:')) {
       pauseInfo = trimmedSection.replace(/^PAUSE:\s*/i, '').trim();
+    } else if (trimmedSection.startsWith('STATE_CHANGE:')) {
+      const jsonText = trimmedSection.replace(/^STATE_CHANGE:\s*/i, '').trim();
+      try {
+        const parsed: unknown = JSON.parse(jsonText);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stateChange = parsed as Record<string, unknown>;
+      } catch {
+        // Leave stateChange undefined; the state validator will reject a missing proposal.
+      }
     }
   });
 
@@ -46,5 +56,6 @@ export function parseXmlFormat(text: string): ParsedXmlLine {
     plan: combinedPlan || undefined,
     lineContent: finalLineContent,
     shouldPause: pauseInfo?.trim().toLowerCase() === 'true' || false,
+    stateChange,
   };
 }

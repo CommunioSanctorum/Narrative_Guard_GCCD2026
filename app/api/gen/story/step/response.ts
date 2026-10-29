@@ -6,6 +6,7 @@ import { getSceneTransitionLines } from '@/utils/lines';
 import { callAnthropicAPI } from '../../utils';
 import { parseXmlFormat } from './parse';
 import { getSystemPrompt, getUserPrompt } from './prompt';
+import { getInitialGameState, normalizeGameState, verifyStateHistory, type StateHistoryEntry } from '@/app/lib/narrative-state';
 
 export async function generateNextLines(input: StepApiInputType): Promise<StepApiOutputType> {
   try {
@@ -14,6 +15,13 @@ export async function generateNextLines(input: StepApiInputType): Promise<StepAp
     const { lines: displayLines, currentSceneId } = playthrough;
     const previousLines = convertDisplayLineToXmlLines(displayLines, scenes);
     const scene = getScene({ cartridge: { scenes } }, currentSceneId);
+    const scenePlace = project.cartridge.places.find((place) => place.uuid === scene.placeId);
+    const previousStateLine = [...displayLines].reverse().find((line) => line.metadata?.narrativeHistory || line.metadata?.narrativeState);
+    const initialState = getInitialGameState(project, scenePlace?.name ?? '알 수 없음');
+    const history = previousStateLine?.metadata?.narrativeHistory as StateHistoryEntry[] | undefined;
+    const historyIntegrity = history ? await verifyStateHistory(history) : { valid: false, reason: 'no previous state history' };
+    const historyState = historyIntegrity.valid && history?.length ? history[history.length - 1].state : undefined;
+    const currentState = normalizeGameState(historyState ?? initialState, scenePlace?.name ?? '알 수 없음');
 
     // Get the first goToSceneId; prioritize action triggers over fallback triggers
     let eventTrigger = triggers.find((t) => t.goToSceneId !== undefined && t.type === 'action');
@@ -29,6 +37,7 @@ export async function generateNextLines(input: StepApiInputType): Promise<StepAp
       project,
       scene,
       goToSceneId,
+      currentState,
     });
 
     const apiLines: ApiLine[] = previousLines.map((line) => ({
@@ -53,6 +62,7 @@ export async function generateNextLines(input: StepApiInputType): Promise<StepAp
             goToSceneId,
             triggerNarratives,
             previousLines,
+            currentState,
           }),
         },
       ] as ApiLine[],
@@ -68,7 +78,7 @@ export async function generateNextLines(input: StepApiInputType): Promise<StepAp
     );
 
     // Parse the response into PLAN:/LINE:/PAUSE:/END: sections
-    const { plan, lineContent, shouldPause } = parseXmlFormat(text);
+    const { plan, lineContent, shouldPause, stateChange } = parseXmlFormat(text);
 
     // Store the response in XML format
     const lines: XmlLine[] = [
@@ -109,6 +119,7 @@ export async function generateNextLines(input: StepApiInputType): Promise<StepAp
 
     return {
       lines,
+      stateChange,
     };
   } catch (error) {
     console.error('Error in generateNextLines:', error);
