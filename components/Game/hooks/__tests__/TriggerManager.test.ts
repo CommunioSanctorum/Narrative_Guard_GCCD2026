@@ -5,9 +5,9 @@ describe('TriggerManager', () => {
   const mockScene: Scene = {
     uuid: '0',
     title: 'Test Scene',
-    background: { imageUrl: 'test.jpg', type: 'image' },
-    setting: 'A test room',
-    openingLine: 'You enter a test room.',
+    imageUrl: 'test.jpg',
+    prompt: 'A test room',
+    script: [{ type: 'narration', text: 'You enter a test room.' }],
     characterIds: ['1'],
     triggers: [
       {
@@ -22,11 +22,7 @@ describe('TriggerManager', () => {
         condition: 'player talks to Alice',
         narrative: 'Alice reveals a secret.',
         uuid: '1',
-        eventImage: {
-          type: 'image',
-          imageUrl: 'secret.jpg',
-          loading: false,
-        },
+        eventImageUrl: 'secret.jpg',
       },
       {
         type: 'fallback',
@@ -251,11 +247,7 @@ describe('TriggerManager', () => {
       expect(triggers).toHaveLength(2);
       expect(triggers[0].narrative).toBe('You find a mysterious key.');
       expect(triggers[1].narrative).toBe('Alice reveals a secret.');
-      expect(triggers[1].eventImage).toStrictEqual({
-        type: 'image',
-        imageUrl: 'secret.jpg',
-        loading: false,
-      });
+      expect(triggers[1].eventImageUrl).toBe('secret.jpg');
     });
 
     it('should filter out invalid trigger keys', () => {
@@ -881,8 +873,8 @@ describe('TriggerManager', () => {
         uuid: '2',
         title: 'Final Scene',
         imageUrl: 'final.jpg',
-        setting: 'The end approaches',
-        openingLine: 'You stand at the precipice of destiny.',
+        prompt: 'The end approaches',
+        script: [{ type: 'narration', text: 'You stand at the precipice of destiny.' }],
         characterIds: ['1'],
         triggers: [
           {
@@ -944,8 +936,8 @@ describe('TriggerManager', () => {
         uuid: '2',
         title: 'Final Scene',
         imageUrl: 'final.jpg',
-        setting: 'Multiple possible endings',
-        openingLine: 'Your choice will determine the fate of all.',
+        prompt: 'Multiple possible endings',
+        script: [{ type: 'narration', text: 'Your choice will determine the fate of all.' }],
         characterIds: ['1'],
         triggers: [
           {
