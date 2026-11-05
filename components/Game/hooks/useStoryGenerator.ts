@@ -567,6 +567,38 @@ export function useStoryGenerator({
           stateReference: {...stateReference},
         }).catch(() => { /* Observation must never stop the original game flow. */ });
       }
+      // Explicit development-only integration demo. Does not run the legacy guard/trigger pipeline.
+      if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ABC_DEMO === 'true') {
+        const stateLine = [...baseLines].reverse().find(line => line.metadata?.narrativeState);
+        const location = project.cartridge.places.find(place => place.uuid === guardScene.placeId)?.name ?? '알 수 없음';
+        const state = normalizeGameState(stateLine?.metadata?.narrativeState ?? project.settings.initialGameState, location);
+        const response = await fetch('/api/gen/story/integration-demo', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            context: {playerInput: input, catalog: [], stateReference: state,
+              recentLines: baseLines.filter(line => line.text?.trim()).slice(-12).map(line => ({
+                role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
+              }))},
+            history: stateLine?.metadata?.narrativeHistory ?? [],
+            npc: {name: npcCharacters[0]?.name ?? 'Shopkeeper', persona: npcCharacters[0]?.description ?? '', emotion: '차분함'},
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? '통합 데모 오류');
+        console.info('[ABC integration demo]', result);
+        window.dispatchEvent(new CustomEvent('abc-demo-result', {detail:result}));
+        const metadata = {shouldPause:true, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true};
+        const demoLines: DisplayLine[] = [
+          {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:npcCharacters[0]?.uuid,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'narration',text:result.c.narration,metadata} as DisplayLine,
+        ];
+        const integrated=[...baseLines,...demoLines];
+        setLines(integrated);setCurrentLineIdx(integrated.length-1);
+        lastChainedLengthRef.current=integrated.length;
+        addToast(`ABC 데모: ${result.b.outcome}${result.c.isFallback?' · C 대체 응답':''}`);
+        return;
+      }
       const guardResponse = await fetch('/api/gen/story/guard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
