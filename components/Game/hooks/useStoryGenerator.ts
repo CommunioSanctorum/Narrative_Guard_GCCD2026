@@ -580,6 +580,17 @@ export function useStoryGenerator({
                 role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
               }))},
             history: stateLine?.metadata?.narrativeHistory ?? [],
+            guardContext: {
+              global:{style:style.prompt||'',description:project.settings.longDescription||'',genre:project.settings.genre||''},
+              language:getLanguageShort(),
+              player:{name:playerCharacter.name,description:playerCharacter.description},
+              scene:{title:guardScene.title,prompt:guardScene.prompt||''},
+              characters:npcCharacters.map(c=>({name:c.name,description:c.description})),
+              places:project.cartridge.places.map(p=>({name:p.name,description:p.description})),
+              recentLines:baseLines.slice(-40).map(l=>({type:l.type,text:l.text,characterName:l.characterName})),
+              priorPlayerStatements:baseLines.filter(l=>l.type==='player').slice(-20).map(l=>l.text),
+              eventConditions:guardScene.triggers.flatMap(t=>t.type==='action'?[t.condition]:[]),
+            },
             npc: {name: npcCharacters[0]?.name ?? 'Shopkeeper', persona: npcCharacters[0]?.description ?? '', emotion: '차분함'},
           }),
         });

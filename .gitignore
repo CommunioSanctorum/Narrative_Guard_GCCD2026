@@ -54,3 +54,5 @@ credentials.json
 /.action-observer-backup
 *.diagnostic-backup
 /.abc-demo-backup
+/.guard-observation-backup
+/.abc-evidence-backup
