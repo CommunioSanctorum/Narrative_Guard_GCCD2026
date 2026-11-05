@@ -53,3 +53,4 @@ data/dramamancer.db
 credentials.json
 /.action-observer-backup
 *.diagnostic-backup
+/.abc-demo-backup
