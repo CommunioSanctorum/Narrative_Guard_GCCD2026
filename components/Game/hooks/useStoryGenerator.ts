@@ -1,3 +1,4 @@
+import {normalizeGistMemory} from '@/app/lib/gist-memory';
 import { actionObserver } from '@/lib/action-interpreter/observer.mjs';
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getBlankScene } from '@/app/constants';
@@ -580,6 +581,19 @@ export function useStoryGenerator({
                 role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
               }))},
             history: stateLine?.metadata?.narrativeHistory ?? [],
+            sceneId:currentSceneId,sceneTriggers:guardScene.triggers,lineCount:baseLines.length,
+            gistMemory:normalizeGistMemory([...baseLines].reverse().find(l=>l.metadata?.gistMemory)?.metadata?.gistMemory),
+            guardContext: {
+              global:{style:style.prompt||'',description:project.settings.longDescription||'',genre:project.settings.genre||''},
+              language:getLanguageShort(),
+              player:{name:playerCharacter.name,description:playerCharacter.description},
+              scene:{title:guardScene.title,prompt:guardScene.prompt||''},
+              characters:npcCharacters.map(c=>({name:c.name,description:c.description})),
+              places:project.cartridge.places.map(p=>({name:p.name,description:p.description})),
+              recentLines:baseLines.slice(-40).map(l=>({type:l.type,text:l.text,characterName:l.characterName})),
+              priorPlayerStatements:baseLines.filter(l=>l.type==='player').slice(-20).map(l=>l.text),
+              eventConditions:guardScene.triggers.flatMap(t=>t.type==='action'?[t.condition]:[]),
+            },
             npc: {name: npcCharacters[0]?.name ?? 'Shopkeeper', persona: npcCharacters[0]?.description ?? '', emotion: '차분함'},
           }),
         });
@@ -587,13 +601,18 @@ export function useStoryGenerator({
         if (!response.ok) throw new Error(result.error ?? '통합 데모 오류');
         console.info('[ABC integration demo]', result);
         window.dispatchEvent(new CustomEvent('abc-demo-result', {detail:result}));
-        const metadata = {shouldPause:true, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true};
+        const metadata = {shouldPause:true, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
         const demoLines: DisplayLine[] = [
           {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false}} as DisplayLine,
-          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:npcCharacters[0]?.uuid,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:characters.find(c=>c.name===result.c.speaker)?.uuid,metadata:{shouldPause:false}} as DisplayLine,
           {type:'narration',text:result.c.narration,metadata} as DisplayLine,
         ];
         const integrated=[...baseLines,...demoLines];
+        if(result.targetSceneId&&result.targetSceneId!==currentSceneId){
+          demoLines[demoLines.length-1]={...demoLines[demoLines.length-1],metadata:{...metadata,sceneId:result.targetSceneId}};
+          integrated[integrated.length-1]=demoLines[demoLines.length-1];
+          setCurrentSceneId(result.targetSceneId);
+        }
         setLines(integrated);setCurrentLineIdx(integrated.length-1);
         lastChainedLengthRef.current=integrated.length;
         addToast(`ABC 데모: ${result.b.outcome}${result.c.isFallback?' · C 대체 응답':''}`);
