@@ -1,3 +1,5 @@
+import {normalizeGistMemory} from '@/app/lib/gist-memory';
+import { actionObserver } from '@/lib/action-interpreter/observer.mjs';
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getBlankScene } from '@/app/constants';
 import { DisplayLine, DisplayLineStatus, Playthrough, StoryState } from '@/app/types';
@@ -231,7 +233,7 @@ export function useStoryGenerator({
         return;
       }
 
-      const { lines: rawStepLines, stateChange } = await apiClient.generateStep({
+      const { lines: rawStepLines, stateChange, gistMemory } = await apiClient.generateStep({
         project: project!,
         playthrough: {
           ...currentPlaythrough!,
@@ -287,7 +289,7 @@ export function useStoryGenerator({
       stateHistory = await appendStateHistory(stateHistory, committedState, proposalAccepted ? 'accepted generated turn' : `rejected generated turn: ${rejectionReason ?? 'validation failed'}`, proposalAccepted, stateChange ?? null);
       if (stepLines.length > 0) {
         const lastIndex = stepLines.length - 1;
-        stepLines[lastIndex] = { ...stepLines[lastIndex], metadata: { ...stepLines[lastIndex].metadata, narrativeState: committedState, narrativeHistory: stateHistory, stateIntegrityValid: proposalAccepted } };
+        stepLines[lastIndex] = { ...stepLines[lastIndex], metadata: { ...stepLines[lastIndex].metadata, narrativeState: committedState, narrativeHistory: stateHistory, stateIntegrityValid: proposalAccepted, ...(gistMemory ? { gistMemory } : {}) } };
       }
 
       // Translate lines
@@ -549,6 +551,73 @@ export function useStoryGenerator({
       const guardScene = getScene(project, currentSceneId);
       const npcCharacters = characters.filter(character =>
         guardScene.characterIds.includes(character.uuid) && character.uuid !== playerCharacter.uuid);
+      // Observation only: run before the guard, without awaiting or altering its decision.
+      // Match the status panel's visible-state source, including its initial-location fallback.
+      if (process.env.NODE_ENV === 'development') {
+        const currentPlace = project.cartridge.places.find(place => place.uuid === guardScene.placeId);
+        const startingPlaceId = getScene(project, project.settings.startingSceneId).placeId;
+        const initialLocation = currentPlace?.name ?? project.cartridge.places.find(place => place.uuid === startingPlaceId)?.name ?? '알 수 없음';
+        const stateLine = [...baseLines].reverse().find(line => line.metadata?.narrativeState);
+        const stateReference = normalizeGameState(stateLine?.metadata?.narrativeState ?? project.settings.initialGameState, initialLocation);
+        void actionObserver.observe(String(currentPlaythrough?.id), {
+          playerInput: input,
+          recentLines: baseLines.filter(line => line.text?.trim()).slice(-12).map(line => ({
+            role: line.type === 'player' ? 'player' as const : line.type === 'character' ? 'npc' as const : 'narration' as const,
+            text: line.text.slice(0, 4000),
+          })),
+          stateReference: {...stateReference},
+        }).catch(() => { /* Observation must never stop the original game flow. */ });
+      }
+      // Explicit development-only integration demo. Does not run the legacy guard/trigger pipeline.
+      if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ABC_DEMO === 'true') {
+        const stateLine = [...baseLines].reverse().find(line => line.metadata?.narrativeState);
+        const location = project.cartridge.places.find(place => place.uuid === guardScene.placeId)?.name ?? '알 수 없음';
+        const state = normalizeGameState(stateLine?.metadata?.narrativeState ?? project.settings.initialGameState, location);
+        const response = await fetch('/api/gen/story/integration-demo', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            context: {playerInput: input, catalog: [], stateReference: state,
+              recentLines: baseLines.filter(line => line.text?.trim()).slice(-12).map(line => ({
+                role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
+              }))},
+            history: stateLine?.metadata?.narrativeHistory ?? [],
+            sceneId:currentSceneId,sceneTriggers:guardScene.triggers,lineCount:baseLines.length,
+            gistMemory:normalizeGistMemory([...baseLines].reverse().find(l=>l.metadata?.gistMemory)?.metadata?.gistMemory),
+            guardContext: {
+              global:{style:style.prompt||'',description:project.settings.longDescription||'',genre:project.settings.genre||''},
+              language:getLanguageShort(),
+              player:{name:playerCharacter.name,description:playerCharacter.description},
+              scene:{title:guardScene.title,prompt:guardScene.prompt||''},
+              characters:npcCharacters.map(c=>({name:c.name,description:c.description})),
+              places:project.cartridge.places.map(p=>({name:p.name,description:p.description})),
+              recentLines:baseLines.slice(-40).map(l=>({type:l.type,text:l.text,characterName:l.characterName})),
+              priorPlayerStatements:baseLines.filter(l=>l.type==='player').slice(-20).map(l=>l.text),
+              eventConditions:guardScene.triggers.flatMap(t=>t.type==='action'?[t.condition]:[]),
+            },
+            npc: {name: npcCharacters[0]?.name ?? 'Shopkeeper', persona: npcCharacters[0]?.description ?? '', emotion: '차분함'},
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? '통합 데모 오류');
+        console.info('[ABC integration demo]', result);
+        window.dispatchEvent(new CustomEvent('abc-demo-result', {detail:result}));
+        const metadata = {shouldPause:true, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
+        const demoLines: DisplayLine[] = [
+          {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:characters.find(c=>c.name===result.c.speaker)?.uuid,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'narration',text:result.c.narration,metadata} as DisplayLine,
+        ];
+        const integrated=[...baseLines,...demoLines];
+        if(result.targetSceneId&&result.targetSceneId!==currentSceneId){
+          demoLines[demoLines.length-1]={...demoLines[demoLines.length-1],metadata:{...metadata,sceneId:result.targetSceneId}};
+          integrated[integrated.length-1]=demoLines[demoLines.length-1];
+          setCurrentSceneId(result.targetSceneId);
+        }
+        setLines(integrated);setCurrentLineIdx(integrated.length-1);
+        lastChainedLengthRef.current=integrated.length;
+        addToast(`ABC 데모: ${result.b.outcome}${result.c.isFallback?' · C 대체 응답':''}`);
+        return;
+      }
       const guardResponse = await fetch('/api/gen/story/guard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

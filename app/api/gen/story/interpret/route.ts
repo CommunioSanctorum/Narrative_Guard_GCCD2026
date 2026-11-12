@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'node:crypto';
 import { callAnthropicAPI } from '../../utils';
 import { interpretAction, validateContext } from '@/lib/action-interpreter/core.mjs';
 
@@ -15,8 +16,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({error:'Invalid interpreter request'}, {status:400});
   }
-  const result = await interpretAction(input, (systemPrompt, messages) =>
-    callAnthropicAPI(
+  let promptHash = '';
+  const result = await interpretAction(input, (systemPrompt, messages) => {
+    promptHash = createHash('sha256').update(systemPrompt, 'utf8').digest('hex');
+    return callAnthropicAPI(
       systemPrompt,
       messages.map(message => ({
         role: message.role,
@@ -28,9 +31,10 @@ export async function POST(request: Request) {
         ],
       })),
       { maxTokens: 700 },
-    ),
+    );
+  },
   );
 
   const status = result.status === 'unavailable' ? 503 : result.status === 'invalid_output' ? 502 : 200;
-  return NextResponse.json(result,{status});
+  return NextResponse.json(result,{status, headers: { 'x-action-prompt-sha256': promptHash }});
 }
