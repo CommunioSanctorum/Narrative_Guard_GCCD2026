@@ -1,9 +1,9 @@
-import type { Project } from '@/app/types';
+import type { CustomStatusField, CustomStatusValue, Project } from '@/app/types';
 
 export type InventoryItem = { id: string; name: string; quantity: number };
-export type GameState = { location: string; health: number; maxHealth: number; gold: number; inventory: InventoryItem[] };
+export type GameState = { location: string; health: number; maxHealth: number; gold: number; inventory: InventoryItem[]; customStats: Record<string, CustomStatusValue> };
 export type InventoryChange = { action: 'acquire' | 'add' | 'use' | 'consume' | 'remove'; id?: string; name: string; quantity: number };
-export type StateProposal = Partial<Omit<GameState, 'inventory'>> & { inventory?: InventoryItem[]; inventoryChanges?: InventoryChange[] };
+export type StateProposal = Partial<Omit<GameState, 'inventory' | 'customStats'>> & { inventory?: InventoryItem[]; inventoryChanges?: InventoryChange[]; customStats?: Record<string, CustomStatusValue> };
 export type StateHistoryEntry = { index: number; previousHash: string; hash: string; state: GameState; reason: string; accepted: boolean; proposal?: unknown };
 
 export function normalizeGameState(raw: unknown, fallbackLocation = '알 수 없음'): GameState {
@@ -24,11 +24,27 @@ export function normalizeGameState(raw: unknown, fallbackLocation = '알 수 없
     const fallbackId = `item-${index}-${name.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-')}`;
     return [{ id: rawId || fallbackId, name, quantity }];
   }) : [];
-  return { location: typeof value.location === 'string' && value.location.trim() ? value.location.trim() : fallbackLocation, health, maxHealth, gold, inventory };
+  const customStats: Record<string, CustomStatusValue> = {};
+  if (value.customStats && typeof value.customStats === 'object' && !Array.isArray(value.customStats)) {
+    for (const [key, item] of Object.entries(value.customStats as Record<string, unknown>)) {
+      if (typeof item === 'string' || typeof item === 'boolean' || (typeof item === 'number' && Number.isFinite(item))) customStats[key] = item;
+    }
+  }
+  return { location: typeof value.location === 'string' && value.location.trim() ? value.location.trim() : fallbackLocation, health, maxHealth, gold, inventory, customStats };
 }
 
 export function getInitialGameState(project: Project, fallbackLocation = '알 수 없음'): GameState {
-  return normalizeGameState(project.settings.initialGameState, fallbackLocation);
+  const state = normalizeGameState(project.settings.initialGameState, fallbackLocation);
+  const customStats: Record<string, CustomStatusValue> = {};
+  for (const field of project.settings.customStatusFields ?? []) {
+    const candidate = state.customStats[field.key];
+    const valid = field.type === 'number'
+      ? typeof candidate === 'number' && Number.isFinite(candidate) && (field.min === undefined || candidate >= field.min) && (field.max === undefined || candidate <= field.max)
+      : field.type === 'boolean' ? typeof candidate === 'boolean' : typeof candidate === 'string';
+    customStats[field.key] = valid ? candidate : field.initialValue;
+  }
+  state.customStats = customStats;
+  return state;
 }
 
 function canonicalState(state: GameState): GameState {
@@ -62,10 +78,23 @@ export async function verifyStateHistory(history: StateHistoryEntry[]): Promise<
   return { valid: true };
 }
 
-export function validateStateProposal(current: GameState, proposal: StateProposal | undefined, validLocations: Set<string>): { valid: boolean; state: GameState; reason?: string } {
+export function validateStateProposal(current: GameState, proposal: StateProposal | undefined, validLocations: Set<string>, fields: CustomStatusField[] = []): { valid: boolean; state: GameState; reason?: string } {
   if (proposal === undefined || proposal === null || Object.keys(proposal).length === 0) return { valid: true, state: canonicalState(current) };
   if (typeof proposal !== 'object' || Array.isArray(proposal)) return { valid: false, state: current, reason: 'proposal must be an object' };
-  const next: GameState = { ...canonicalState(current), inventory: current.inventory.map((item) => ({ ...item })) };
+  const next: GameState = { ...canonicalState(current), inventory: current.inventory.map((item) => ({ ...item })), customStats: { ...current.customStats } };
+  if (proposal.customStats !== undefined) {
+    if (!proposal.customStats || typeof proposal.customStats !== 'object' || Array.isArray(proposal.customStats)) return { valid: false, state: current, reason: 'invalid customStats' };
+    const fieldMap = new Map(fields.map((field) => [field.key, field]));
+    for (const [key, value] of Object.entries(proposal.customStats)) {
+      const field = fieldMap.get(key);
+      if (!field) return { valid: false, state: current, reason: `unknown custom status: ${key}` };
+      const valid = field.type === 'number'
+        ? typeof value === 'number' && Number.isFinite(value) && (field.min === undefined || value >= field.min) && (field.max === undefined || value <= field.max)
+        : field.type === 'boolean' ? typeof value === 'boolean' : typeof value === 'string' && value.length <= 500;
+      if (!valid) return { valid: false, state: current, reason: `invalid custom status value: ${key}` };
+      next.customStats[key] = value;
+    }
+  }
   if (proposal.location !== undefined) {
     if (typeof proposal.location !== 'string' || !proposal.location.trim() || !validLocations.has(proposal.location.trim().toLocaleLowerCase())) return { valid: false, state: current, reason: 'unknown location' };
     next.location = proposal.location.trim();

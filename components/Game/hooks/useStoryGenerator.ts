@@ -231,7 +231,7 @@ export function useStoryGenerator({
         return;
       }
 
-      const { lines: rawStepLines, stateChange, gistMemory } = await apiClient.generateStep({
+      const { lines: rawStepLines, stateChange } = await apiClient.generateStep({
         project: project!,
         playthrough: {
           ...currentPlaythrough!,
@@ -274,7 +274,7 @@ export function useStoryGenerator({
       }
       if (integrityValid.valid && stateChange && Object.keys(stateChange).length > 0) {
         const validLocations = new Set(project!.cartridge.places.map((place) => place.name.trim().toLocaleLowerCase()));
-        const validation = validateStateProposal(committedState, stateChange as never, validLocations);
+        const validation = validateStateProposal(committedState, stateChange as never, validLocations, project!.settings.customStatusFields ?? []);
         proposalAccepted = validation.valid;
         rejectionReason = validation.reason;
         if (validation.valid) committedState = validation.state;
@@ -287,7 +287,7 @@ export function useStoryGenerator({
       stateHistory = await appendStateHistory(stateHistory, committedState, proposalAccepted ? 'accepted generated turn' : `rejected generated turn: ${rejectionReason ?? 'validation failed'}`, proposalAccepted, stateChange ?? null);
       if (stepLines.length > 0) {
         const lastIndex = stepLines.length - 1;
-        stepLines[lastIndex] = { ...stepLines[lastIndex], metadata: { ...stepLines[lastIndex].metadata, narrativeState: committedState, narrativeHistory: stateHistory, stateIntegrityValid: proposalAccepted, ...(gistMemory ? { gistMemory } : {}) } };
+        stepLines[lastIndex] = { ...stepLines[lastIndex], metadata: { ...stepLines[lastIndex].metadata, narrativeState: committedState, narrativeHistory: stateHistory, stateIntegrityValid: proposalAccepted } };
       }
 
       // Translate lines

@@ -36,6 +36,9 @@ ${place ? `Place: ${place.name} - ${place.description}` : ''}
 
 AUTHORITATIVE CURRENT GAME STATE (JSON):
 ${JSON.stringify(currentState)}
+USER-DEFINED STATUS FIELDS (JSON):
+${JSON.stringify(project.settings.customStatusFields ?? [])}
+Only use these configured keys for customStats; obey each field type and numeric range.
 This JSON is the authoritative state. Read it before deciding whether the player's action is possible. Never claim the state or inventory is undefined or inaccessible. An empty inventory means no items are held. Do not invent items, gold, health, or location.
 NPCs: ${scene.characterIds
     .filter((c) => c !== playerCharacter.uuid)
@@ -48,7 +51,7 @@ NPCs: ${scene.characterIds
 ALWAYS format your output as:
 LINE: Any narration before the dialogue. <ch name="Name">(Action or body language) Spoken dialogue.</ch> Any narration after the dialogue.
 ${goToSceneId ? 'PAUSE: false' : 'PAUSE: [true|false]'}
-STATE_CHANGE: a single-line valid JSON object containing only changes that actually occur. If nothing changes, output STATE_CHANGE: {}. Use inventoryChanges for item operations rather than replacing the inventory. Example: STATE_CHANGE: {"inventoryChanges":[{"action":"acquire","name":"Iron Key","quantity":1}]}. Never expose implementation details in the narration.
+STATE_CHANGE: a single-line valid JSON object containing only changes that actually occur. If nothing changes, output STATE_CHANGE: {}. Use inventoryChanges for item operations rather than replacing the inventory. For custom values, use customStats with only configured keys and obey each declared type and numeric range. Example: STATE_CHANGE: {"inventoryChanges":[{"action":"acquire","name":"Iron Key","quantity":1}],"customStats":{"clueCount":1}}. Never expose implementation details in the narration.
 
 NEVER generate any actions/dialogue for ${playerCharacter.name}. NEVER generate characters that are not currently in this scene, unless it makes sense for them to enter it (i.e. interacting with a shopkeeper). If you want ${playerCharacter.name} to act, react, or speak, set PAUSE=true. If building up the plot, environment, or characters, set to false. Try to only PAUSE=true after enough interesting things have happened.
 
@@ -144,7 +147,7 @@ PAUSE: false`;
 
   return (
     basePrompt +
-    `\n\n--- AUTHORITATIVE STATE AND OUTPUT CONTRACT ---\nCurrent state JSON: ${JSON.stringify(currentState)}\nUse the state above as fact. Do not tell the player the state is unavailable.\nAfter the PAUSE line, output exactly one STATE_CHANGE line with valid JSON. Only propose changes that occur in the narrated outcome. Allowed fields: location, health, maxHealth, gold, inventoryChanges. inventoryChanges actions: acquire/add to gain an item; use/consume/remove to reduce or remove an existing item. Each operation needs name and positive integer quantity. If nothing changes, output STATE_CHANGE: {}. Do not include state changes in narrative prose.\n\n--- REMEMBER ---
+    `\n\n--- AUTHORITATIVE STATE AND OUTPUT CONTRACT ---\nCurrent state JSON: ${JSON.stringify(currentState)}\nUse the state above as fact. Do not tell the player the state is unavailable.\nAfter the PAUSE line, output exactly one STATE_CHANGE line with valid JSON. Only propose changes that occur in the narrated outcome. Allowed fields: location, health, maxHealth, gold, inventoryChanges, customStats. Configured custom status fields: ${JSON.stringify(project.settings.customStatusFields ?? [])}. customStats may include only configured keys and must obey each declared type and numeric range. inventoryChanges actions: acquire/add to gain an item; use/consume/remove to reduce or remove an existing item. Each operation needs name and positive integer quantity. If nothing changes, output STATE_CHANGE: {}. Do not include state changes in narrative prose.\n\n--- REMEMBER ---
 
 Scene details:
 ${place ? `Place: ${place.name} - ${place.description}` : ''}

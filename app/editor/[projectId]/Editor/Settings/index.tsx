@@ -134,9 +134,37 @@ export function SettingsList() {
           </div>
         </div>
         <div className="flex flex-col gap-3 rounded-lg border border-slate-300 p-4 dark:border-slate-700">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2>사용자 정의 상태 항목</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">장소와 인벤토리는 고정 표시됩니다. 체력·골드 대신 게임에 필요한 상태 항목을 직접 정의할 수 있습니다.</p>
+            </div>
+            <Button onClick={() => {
+              const fields = project.settings.customStatusFields ?? [];
+              const field = { key: `status_${Date.now()}`, label: '새 상태', type: 'number' as const, initialValue: 0, visible: true };
+              updateProject({ settings: { ...project.settings, customStatusFields: [...fields, field] } }, { message: 'added custom status field', context: JSON.stringify(field) });
+            }}>항목 추가</Button>
+          </div>
+          {(project.settings.customStatusFields ?? []).map((field, index) => {
+            const fields = project.settings.customStatusFields ?? [];
+            const saveField = (updates: Partial<typeof field>) => {
+              const next = fields.map((item, i) => i === index ? { ...item, ...updates } : item);
+              updateProject({ settings: { ...project.settings, customStatusFields: next } }, { message: 'updated custom status fields', context: JSON.stringify(next) });
+            };
+            return <div key={`${field.key}-${index}`} className="grid grid-cols-1 gap-2 rounded-lg bg-slate-100 p-3 dark:bg-slate-800 sm:grid-cols-2">
+              <label className="flex flex-col gap-1 text-sm"><span>표시 이름</span><input value={field.label} maxLength={40} onChange={(event) => saveField({ label: event.target.value })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" /></label>
+              <label className="flex flex-col gap-1 text-sm"><span>키 (영문/숫자/_/-)</span><input value={field.key} maxLength={40} onChange={(event) => saveField({ key: event.target.value.replace(/[^a-zA-Z0-9_-]/g, '') })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" /></label>
+              <label className="flex flex-col gap-1 text-sm"><span>유형</span><select value={field.type} onChange={(event) => { const type = event.target.value as 'number' | 'text' | 'boolean'; saveField({ type, initialValue: type === 'number' ? 0 : type === 'boolean' ? false : '', min: undefined, max: undefined }); }} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white"><option value="number">숫자</option><option value="text">텍스트</option><option value="boolean">참/거짓</option></select></label>
+              <label className="flex flex-col gap-1 text-sm"><span>초기값</span>{field.type === 'number' ? <input type="number" value={Number(field.initialValue)} onChange={(event) => saveField({ initialValue: Number(event.target.value) })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" /> : field.type === 'boolean' ? <select value={String(field.initialValue)} onChange={(event) => saveField({ initialValue: event.target.value === 'true' })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white"><option value="false">아니오</option><option value="true">예</option></select> : <input value={String(field.initialValue)} maxLength={500} onChange={(event) => saveField({ initialValue: event.target.value })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" />}</label>
+              {field.type === 'number' && <div className="grid grid-cols-2 gap-2 sm:col-span-2"><label className="flex flex-col gap-1 text-sm"><span>최소값 (선택)</span><input type="number" value={field.min ?? ''} onChange={(event) => saveField({ min: event.target.value === '' ? undefined : Number(event.target.value) })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" /></label><label className="flex flex-col gap-1 text-sm"><span>최대값 (선택)</span><input type="number" value={field.max ?? ''} onChange={(event) => saveField({ max: event.target.value === '' ? undefined : Number(event.target.value) })} className="rounded-lg bg-white p-2 text-slate-900 dark:bg-slate-700 dark:text-white" /></label></div>}
+              <div className="flex items-center justify-between sm:col-span-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={field.visible !== false} onChange={(event) => saveField({ visible: event.target.checked })} />상태창에 표시</label><Button variant="icon" aria-label="상태 항목 삭제" onClick={() => { const next = fields.filter((_, i) => i !== index); updateProject({ settings: { ...project.settings, customStatusFields: next } }, { message: 'removed custom status field', context: JSON.stringify(next) }); }}>×</Button></div>
+            </div>;
+          })}
+        </div>
+        <div className="flex flex-col gap-3 rounded-lg border border-slate-300 p-4 dark:border-slate-700">
           <div>
             <h2>초기 게임 상태</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">새 플레이를 시작할 때 상태창에 표시될 장소, 체력, 골드, 인벤토리를 설정합니다. 저장 후 새 플레이를 시작하면 적용됩니다.</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">새 플레이의 시작 장소와 인벤토리를 설정합니다. 체력·골드 등 추가 상태값은 위에서 사용자 정의 항목으로 설정하세요.</p>
           </div>
           {(() => {
             const configured = project.settings.initialGameState || {};
@@ -163,11 +191,6 @@ export function SettingsList() {
                   {project.cartridge.places.map((place) => <option key={place.uuid} value={place.name}>{place.name}</option>)}
                 </select>
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1 text-sm"><span>최대 체력</span><input type="number" min={1} max={100000} value={initialState.maxHealth} onChange={(event) => saveInitialState({ maxHealth: Number(event.target.value) })} className="rounded-lg bg-slate-200 p-2 text-slate-900 dark:bg-slate-800 dark:text-white" /></label>
-                <label className="flex flex-col gap-1 text-sm"><span>초기 체력</span><input type="number" min={0} max={initialState.maxHealth} value={initialState.health} onChange={(event) => saveInitialState({ health: Number(event.target.value) })} className="rounded-lg bg-slate-200 p-2 text-slate-900 dark:bg-slate-800 dark:text-white" /></label>
-                <label className="col-span-2 flex flex-col gap-1 text-sm"><span>초기 골드</span><input type="number" min={0} max={1000000000} value={initialState.gold} onChange={(event) => saveInitialState({ gold: Number(event.target.value) })} className="rounded-lg bg-slate-200 p-2 text-slate-900 dark:bg-slate-800 dark:text-white" /></label>
-              </div>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-2"><h3 className="font-semibold">초기 인벤토리</h3><Button onClick={() => saveInitialState({ inventory: [...initialState.inventory, { id: `item-${Date.now()}`, name: '새 아이템', quantity: 1 }] })}>아이템 추가</Button></div>
                 {initialState.inventory.length === 0 && <p className="text-sm text-slate-500">초기 아이템이 없습니다.</p>}
