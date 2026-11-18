@@ -276,7 +276,7 @@ export function useStoryGenerator({
       }
       if (integrityValid.valid && stateChange && Object.keys(stateChange).length > 0) {
         const validLocations = new Set(project!.cartridge.places.map((place) => place.name.trim().toLocaleLowerCase()));
-        const validation = validateStateProposal(committedState, stateChange as never, validLocations);
+        const validation = validateStateProposal(committedState, stateChange as never, validLocations, project!.settings.customStatusFields ?? []);
         proposalAccepted = validation.valid;
         rejectionReason = validation.reason;
         if (validation.valid) committedState = validation.state;
