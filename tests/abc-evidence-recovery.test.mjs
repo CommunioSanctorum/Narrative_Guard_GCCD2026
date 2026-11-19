@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseOpenProposal,interpretOpenAction} from '../lib/action-interpreter/open-core.mjs';
+const input={schemaVersion:1,playerInput:'벽을 두드려 봅니다.',playerId:null,entities:[],scene:null,recentLines:[],stateReference:null};
+const current={source:'input',lineIndex:null,quote:'벽을 두드려'};
+const invalid={source:'history',lineIndex:9,quote:'없는 대사'};
+const raw=(evidence,extra={})=>JSON.stringify({schemaVersion:1,status:'interpreted',clarification:null,actions:[{summary:'벽을 두드린다',predicate:'두드리다',mode:'attempt',polarity:'positive',actor:null,target:null,recipient:null,source:null,destination:null,instrument:null,quantity:null,manner:[],condition:null,utterance:null,claimedOutcome:null,evidence,...extra}]});
+test('현재 입력 근거가 있으면 틀린 보조 인용만 제외',()=>assert.deepEqual(parseOpenProposal(raw([current,invalid]),input).actions[0].evidence,[current]));
+test('현재 입력 근거가 없으면 한 번 재해석',async()=>{let calls=0;const result=await interpretOpenAction(input,async()=>++calls===1?raw([invalid]):raw([current]));assert.equal(calls,2);assert.equal(result.status,'interpreted');});
+test('재해석도 근거가 없으면 판정에 넘기지 않음',async()=>{let calls=0;const result=await interpretOpenAction(input,async()=>{calls++;return raw([invalid]);});assert.equal(calls,2);assert.equal(result.status,'invalid_output');});
+test('보조 근거 오류와 수량이 함께 있으면 그대로 채택하지 않음',()=>assert.equal(parseOpenProposal(raw([current,invalid],{quantity:2}),input).reasonCode,'invalid_evidence'));
