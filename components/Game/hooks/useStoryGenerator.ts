@@ -1,3 +1,4 @@
+import { storyContextLines } from '@/lib/integration-demo/story-context.mjs';
 import {observeOpenRecorded} from '@/lib/action-interpreter/open-records.mjs';
 import {normalizeGistMemory} from '@/app/lib/gist-memory';
 import { actionObserver } from '@/lib/action-interpreter/observer.mjs';
@@ -536,6 +537,7 @@ export function useStoryGenerator({
   };
 
   const handleUserInput = async (input: string) => {
+    if (lines[currentLineIdx]?.metadata?.shouldEnd) return;
     if (!project || !triggerManager || !scenes || !characters || !style) return;
 
     processingUserInputRef.current = true;
@@ -608,11 +610,14 @@ export function useStoryGenerator({
               },
             } : undefined,
             context: {playerInput: input, catalog: [], stateReference: state,
-              recentLines: baseLines.filter(line => line.text?.trim()).slice(-12).map(line => ({
+              recentLines: (useGeneralABC ? storyContextLines(baseLines) : baseLines).filter(line => line.text?.trim()).slice(-12).map(line => ({
                 role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
               }))},
             history: stateLine?.metadata?.narrativeHistory ?? [],
             sceneId:currentSceneId,sceneTriggers:guardScene.triggers,lineCount:baseLines.length,
+            sceneTurnHistory:useGeneralABC?getSceneLines(baseLines,currentSceneId).map(line=>({
+              player:line.type==='player',activatedTriggerIds:line.metadata?.activatedTriggerIds??[],
+            })).filter(line=>line.player||line.activatedTriggerIds.length):undefined,
             gistMemory:normalizeGistMemory([...baseLines].reverse().find(l=>l.metadata?.gistMemory)?.metadata?.gistMemory),
             guardContext: {
               global:{style:style.prompt||'',description:project.settings.longDescription||'',genre:project.settings.genre||''},
@@ -632,10 +637,11 @@ export function useStoryGenerator({
         if (!response.ok) throw new Error(result.error ?? '통합 데모 오류');
         console.info('[ABC integration demo]', result);
         window.dispatchEvent(new CustomEvent('abc-demo-result', {detail:result}));
-        const metadata = {shouldPause:true, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
+        const excludeFromContext = useGeneralABC && result.c.excludeFromContext === true;
+        const metadata = {abcExcludeFromContext:excludeFromContext,shouldPause:!result.shouldEnd, shouldEnd:result.shouldEnd===true, endingName:result.endingName, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
         const demoLines: DisplayLine[] = [
-          {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false}} as DisplayLine,
-          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:characters.find(c=>c.name===result.c.speaker)?.uuid,metadata:{shouldPause:false}} as DisplayLine,
+          {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false,activatedTriggerIds:useGeneralABC?result.trigger?.activatedIds:undefined}} as DisplayLine,
+          {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:characters.find(c=>c.name===result.c.speaker)?.uuid,metadata:{shouldPause:false,abcExcludeFromContext:excludeFromContext}} as DisplayLine,
           {type:'narration',text:result.c.narration,metadata} as DisplayLine,
         ];
         const integrated=[...baseLines,...demoLines];
