@@ -1,4 +1,7 @@
 import { TriggerManager } from '@/components/Game/hooks/TriggerManager';
+import type { GistMemory } from '@/app/lib/gist-memory';
+
+
 
 export type Visibility = 'public' | 'unlisted' | 'private';
 
@@ -210,7 +213,7 @@ export type DisplayLine = {
     narrativeHistory?: { index: number; previousHash: string; hash: string; state: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[]; customStats?: Record<string, CustomStatusValue> }; reason: string; accepted: boolean; proposal?: unknown }[];
     stateIntegrityValid?: boolean;
     /** Derived narrative memory; GameState/state hash history remain authoritative. */
-    gistMemory?: { version: 1; episodes: { id: string; sceneId: string; summary: string; keyEvents: string[]; relationshipChanges: string[]; openThreads: string[]; sourceStartLine: number; sourceEndLine: number; createdAt: string }[]; lastProcessedLineCount: number; lastSceneId?: string };
+    gistMemory?: GistMemory;
   };
 };
 
