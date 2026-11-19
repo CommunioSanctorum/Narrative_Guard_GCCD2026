@@ -8,3 +8,15 @@ const valid={status:'accepted',reason:'표시등이 켜집니다.',evidence:quot
 const parse=x=>parseJudgment(JSON.stringify(x),quote);
 test('anchored custom proposal',()=>assert.deepEqual(parse(valid).proposal,valid.proposal));
 for(const [name,change] of [['gold',{proposal:{gold:100}}],['unanchored',{evidence:'없는 문구'}],['rejected',{status:'rejected'}]]) test(name,()=>assert.deepEqual(parse({...valid,...change}).proposal,{}));
+test('diagnostics distinguish JSON, shape, proposal and evidence',()=>{
+ assert.equal(parseJudgment('{',quote).reasonCode,'invalid_json');
+ assert.equal(parse({}).reasonCode,'invalid_fields');
+ assert.equal(parse({...valid,proposal:{gold:100}}).reasonCode,'invalid_proposal');
+ assert.equal(parse({...valid,evidence:'다른 장면의 문구'}).reasonCode,'evidence_mismatch');
+});
+test('complete JSON fence accepted without bypassing validation',()=>{
+ const wrap=x=>'```json\n'+JSON.stringify(x)+'\n```';
+ assert.deepEqual(parseJudgment(wrap(valid),quote).proposal,valid.proposal);
+ assert.equal(parseJudgment('extra\n'+wrap(valid),quote).reasonCode,'invalid_json');
+ assert.equal(parseJudgment(wrap({...valid,evidence:'없는 근거'}),quote).reasonCode,'evidence_mismatch');
+});
