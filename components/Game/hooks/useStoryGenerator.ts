@@ -602,9 +602,9 @@ export function useStoryGenerator({
             scenario: useGeneralABC ? {
               settings: {playerId: project.settings.playerId, customStatusFields: project.settings.customStatusFields ?? []},
               cartridge: {
-                characters: project.cartridge.characters.map(c => ({uuid:c.uuid,name:c.name})),
-                places: project.cartridge.places.map(p => ({uuid:p.uuid,name:p.name})),
-                scenes: project.cartridge.scenes.map(s => ({uuid:s.uuid,title:s.title,prompt:s.uuid === currentSceneId ? s.prompt : undefined})),
+                characters: project.cartridge.characters.map(c => ({uuid:c.uuid,name:c.name,description:project.cartridge.scenes.find(s=>s.uuid===currentSceneId)?.characterIds.includes(c.uuid) ? c.description : undefined})),
+                places: project.cartridge.places.map(p => ({uuid:p.uuid,name:p.name,description:p.uuid === project.cartridge.scenes.find(s => s.uuid === currentSceneId)?.placeId ? p.description : undefined})),
+                scenes: project.cartridge.scenes.map(s => ({uuid:s.uuid,title:s.title,placeId:s.placeId,characterIds:s.uuid===currentSceneId ? s.characterIds : undefined,prompt:s.uuid === currentSceneId ? s.prompt : undefined})),
               },
             } : undefined,
             context: {playerInput: input, catalog: [], stateReference: state,

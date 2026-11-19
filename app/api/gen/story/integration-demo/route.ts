@@ -1,3 +1,4 @@
+import {selectSceneCharacters} from '@/lib/integration-demo/scene-characters.mjs';
 import {fromDramamancer} from '@/lib/action-interpreter/open-adapter.mjs';
 import {interpretOpenAction} from '@/lib/action-interpreter/open-core.mjs';
 import {gateJudgment, judgmentPrompt, parseJudgment} from '@/lib/integration-demo/llm-judgment.mjs';
@@ -47,14 +48,24 @@ export async function POST(request:Request){
  let a:Proposal|{status:'resolved';action:{type:'move_scene';sceneId:string}};
  if(general){
    const openContext=fromDramamancer({project:input.scenario,sceneId,playerInput:context.playerInput,recentLines:context.recentLines,stateReference:{...before}});
-   generalScene=openContext.scene;
-   sceneText=openContext.scene?.description??'';
+   const cartridge=input.scenario.cartridge;
+   const sourceScene=cartridge.scenes.find((s: {uuid:string})=>s.uuid===sceneId);
+   const sourcePlace=sourceScene?.placeId == null ? undefined : cartridge.places.find((p: {uuid:string})=>p.uuid===sourceScene.placeId);
+   const placeDescription=typeof sourcePlace?.description==='string' ? sourcePlace.description : '';
+   const sceneDescription=openContext.scene?.description??'';
+   const presentCharacters=selectSceneCharacters(sourceScene?.characterIds,cartridge.characters);
+   generalScene={presentCharacters,...openContext.scene,place:sourcePlace ? {name:sourcePlace.name,description:placeDescription} : null};
+   sceneText=[sceneDescription,placeDescription,...presentCharacters.map(c=>c.description)].filter(Boolean).join('\n\n');
+   if(openContext.scene && placeDescription){
+     const forA=[sceneDescription,placeDescription].filter(Boolean).join('\n\n');
+     openContext.scene.description=forA.slice(0,6000);
+   }
    openA=await interpretOpenAction(openContext,async(systemPrompt,messages)=>{
      const raw=await callAnthropicAPI(systemPrompt,messages.map(m=>({role:m.role,content:[{type:'text' as const,text:m.content}]})));
      if(typeof raw!=='string')throw Error('A 응답 없음');
      return raw;
    });
-   const gated=gateJudgment(openA);
+   const gated = gateJudgment(openA, openContext.scene?.presentCharacterIds ?? []);
    if(gated)judgment={status:'undetermined',reason:gated,proposal:{}};
    else{
      try{
@@ -101,7 +112,13 @@ DEMO EXTENSION (overrides the action enum restriction ONLY for explicit scene mo
  history=await appendStateHistory(history,after,`${turnId}: ${b.reason}`,checked.valid&&trade.outcome==='SUCCESS',trade.proposal);
  const npc=!general&&targetSceneId==='abc-street'?'길 안내자':!general&&targetSceneId==='abc-shop'?'상점 주인':typeof input.npc?.name==='string'?input.npc.name:'Shopkeeper';
  let raw='';let narrative=null;let error:string|null=null;
- const skipNarrative=general&&(!!judgment?.reasonCode||!checked.valid);
+ const skipNarrative =
+  general && (
+    judgment?.status === 'undetermined' ||
+    !!judgment?.reasonCode ||
+    !checked.valid
+  );
+
  if(skipNarrative)error='판정 미확정: 결과 서술 생략';
  else try{
  const memoryContext=buildGistContext(previousGist,context.recentLines.map(l=>({role:l.role==='player'?'user':'assistant',text:l.text} as XmlLine)),after);
@@ -122,6 +139,6 @@ DEMO EXTENSION (overrides the action enum restriction ONLY for explicit scene mo
   }catch{gistStatus='failed';}
  }else gistMemory={...previousGist,lastSceneId:previousGist.lastSceneId??sceneId};
  const guard=await guardPromise;
- return NextResponse.json({schemaVersion:2,implementationVersion:general?'abc-general-llm-v03':'abc-expanded-v04',baseCommit:'a7aa891e7ef97e84949a4e205b82f9e7c70c9974',startedAt:new Date(started).toISOString(),context,sceneId,targetSceneId,trigger,gistMemory,gistTrace:{status:gistStatus,raw:gistRaw,inputEpisodeIds:previousGist.episodes.map(e=>e.id)},turnId,guard,a:openA??a,b,bDiagnostics:general?{reasonCode:!checked.valid?'state_validation_failed':judgment?.reasonCode,raw:judgmentRaw}:undefined,c:{...narrative,isFallback:fallback,error,raw},before,after,history,durationMs:Date.now()-started});
+ return NextResponse.json({schemaVersion:2,implementationVersion:general?'abc-general-llm-v05':'abc-expanded-v04',baseCommit:'a7aa891e7ef97e84949a4e205b82f9e7c70c9974',startedAt:new Date(started).toISOString(),context,sceneId,targetSceneId,trigger,gistMemory,gistTrace:{status:gistStatus,raw:gistRaw,inputEpisodeIds:previousGist.episodes.map(e=>e.id)},turnId,guard,a:openA??a,b,bDiagnostics:general?{reasonCode:!checked.valid?'state_validation_failed':judgment?.reasonCode,raw:judgmentRaw}:undefined,c:{...narrative,isFallback:fallback,error,raw},before,after,history,durationMs:Date.now()-started});
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'통합 오류'},{status:400});}
 }

@@ -20,3 +20,8 @@ test('complete JSON fence accepted without bypassing validation',()=>{
  assert.equal(parseJudgment('extra\n'+wrap(valid),quote).reasonCode,'invalid_json');
  assert.equal(parseJudgment(wrap({...valid,evidence:'없는 근거'}),quote).reasonCode,'evidence_mismatch');
 });
+test('place-only evidence passes the same parser contract',()=>{
+ const scene='상점 주인이 카운터에 있다.';
+ assert.deepEqual(parseJudgment(JSON.stringify(valid),[scene,quote].join('\n\n')).proposal,valid.proposal);
+ assert.equal(parseJudgment(JSON.stringify(valid),scene).reasonCode,'evidence_mismatch');
+});
