@@ -1,4 +1,7 @@
 import { TriggerManager } from '@/components/Game/hooks/TriggerManager';
+import type { GistMemory } from '@/app/lib/gist-memory';
+
+
 
 export type Visibility = 'public' | 'unlisted' | 'private';
 
@@ -97,6 +100,16 @@ export interface Scene {
 }
 
 /* Settings */
+export type CustomStatusValue = number | string | boolean;
+export type CustomStatusField = {
+  key: string;
+  label: string;
+  type: 'number' | 'text' | 'boolean';
+  initialValue: CustomStatusValue;
+  min?: number;
+  max?: number;
+  visible?: boolean;
+};
 export interface Settings {
   shortDescription: string;
   longDescription: string;
@@ -113,7 +126,9 @@ export interface Settings {
     maxHealth?: number;
     gold?: number;
     inventory?: { id: string; name: string; quantity: number }[];
+    customStats?: Record<string, CustomStatusValue>;
   };
+  customStatusFields?: CustomStatusField[];
 }
 
 /* Style */
@@ -194,11 +209,11 @@ export type DisplayLine = {
     verbatim?: boolean; // TRUE if not generated
     status?: DisplayLineStatus;
     eventImageUrl?: string;
-    narrativeState?: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[] };
-    narrativeHistory?: { index: number; previousHash: string; hash: string; state: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[] }; reason: string; accepted: boolean; proposal?: unknown }[];
+    narrativeState?: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[]; customStats?: Record<string, CustomStatusValue> };
+    narrativeHistory?: { index: number; previousHash: string; hash: string; state: { location: string; health: number; maxHealth: number; gold: number; inventory: { id: string; name: string; quantity: number }[]; customStats?: Record<string, CustomStatusValue> }; reason: string; accepted: boolean; proposal?: unknown }[];
     stateIntegrityValid?: boolean;
     /** Derived narrative memory; GameState/state hash history remain authoritative. */
-    gistMemory?: { version: 1; episodes: { id: string; sceneId: string; summary: string; keyEvents: string[]; relationshipChanges: string[]; openThreads: string[]; sourceStartLine: number; sourceEndLine: number; createdAt: string }[]; lastProcessedLineCount: number; lastSceneId?: string };
+    gistMemory?: GistMemory;
   };
 };
 

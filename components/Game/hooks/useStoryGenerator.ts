@@ -1,3 +1,4 @@
+import {observeOpenRecorded} from '@/lib/action-interpreter/open-records.mjs';
 import {normalizeGistMemory} from '@/app/lib/gist-memory';
 import { actionObserver } from '@/lib/action-interpreter/observer.mjs';
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -276,7 +277,7 @@ export function useStoryGenerator({
       }
       if (integrityValid.valid && stateChange && Object.keys(stateChange).length > 0) {
         const validLocations = new Set(project!.cartridge.places.map((place) => place.name.trim().toLocaleLowerCase()));
-        const validation = validateStateProposal(committedState, stateChange as never, validLocations);
+        const validation = validateStateProposal(committedState, stateChange as never, validLocations, project!.settings.customStatusFields ?? []);
         proposalAccepted = validation.valid;
         rejectionReason = validation.reason;
         if (validation.valid) committedState = validation.state;
@@ -551,9 +552,10 @@ export function useStoryGenerator({
       const guardScene = getScene(project, currentSceneId);
       const npcCharacters = characters.filter(character =>
         guardScene.characterIds.includes(character.uuid) && character.uuid !== playerCharacter.uuid);
+      const useGeneralABC = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ABC_GENERAL === 'true';
       // Observation only: run before the guard, without awaiting or altering its decision.
       // Match the status panel's visible-state source, including its initial-location fallback.
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development' && !useGeneralABC) {
         const currentPlace = project.cartridge.places.find(place => place.uuid === guardScene.placeId);
         const startingPlaceId = getScene(project, project.settings.startingSceneId).placeId;
         const initialLocation = currentPlace?.name ?? project.cartridge.places.find(place => place.uuid === startingPlaceId)?.name ?? '알 수 없음';
@@ -568,14 +570,43 @@ export function useStoryGenerator({
           stateReference: {...stateReference},
         }).catch(() => { /* Observation must never stop the original game flow. */ });
       }
+      // Optional new A shadow path. Never used as B input; failures cannot block play.
+      if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_OPEN_A_OBSERVE === 'true' && !useGeneralABC) {
+        const stateLine = [...baseLines].reverse().find(line => line.metadata?.narrativeState);
+        const location = project.cartridge.places.find(place => place.uuid === guardScene.placeId)?.name ?? '알 수 없음';
+        const state = normalizeGameState(stateLine?.metadata?.narrativeState ?? project.settings.initialGameState, location);
+        // Send the minimal adapter view, not images, sprites or the whole project.
+        const observationInput = {source:'dramamancer',input:{
+            project:{settings:{playerId:project.settings.playerId},cartridge:{
+              characters:project.cartridge.characters.map(c=>({uuid:c.uuid,name:c.name})),
+              places:project.cartridge.places.map(p=>({uuid:p.uuid,name:p.name})),
+              scenes:project.cartridge.scenes.map(s=>({uuid:s.uuid,title:s.title,prompt:s.uuid===currentSceneId?s.prompt:undefined})),
+            }},
+            sceneId:currentSceneId,playerInput:input,stateReference:{...state},
+            recentLines:baseLines.filter(l=>l.text?.trim()).slice(-12).map(l=>({role:l.type==='player'?'player':l.type==='character'?'npc':'narration',text:l.text.slice(0,4000)})),
+          }};
+        void observeOpenRecorded({sessionKey:String(currentPlaythrough?.id),sceneId:currentSceneId,input:observationInput},()=>fetch('/api/gen/story/interpret-open',{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(observationInput),
+        })).catch(()=>{ /* Observation must never control play. */ });
+      }
+
       // Explicit development-only integration demo. Does not run the legacy guard/trigger pipeline.
-      if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ABC_DEMO === 'true') {
+      if (useGeneralABC || (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ABC_DEMO === 'true')) {
         const stateLine = [...baseLines].reverse().find(line => line.metadata?.narrativeState);
         const location = project.cartridge.places.find(place => place.uuid === guardScene.placeId)?.name ?? '알 수 없음';
         const state = normalizeGameState(stateLine?.metadata?.narrativeState ?? project.settings.initialGameState, location);
         const response = await fetch('/api/gen/story/integration-demo', {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
+            general: useGeneralABC,
+            scenario: useGeneralABC ? {
+              settings: {playerId: project.settings.playerId, customStatusFields: project.settings.customStatusFields ?? []},
+              cartridge: {
+                characters: project.cartridge.characters.map(c => ({uuid:c.uuid,name:c.name,description:project.cartridge.scenes.find(s=>s.uuid===currentSceneId)?.characterIds.includes(c.uuid) ? c.description : undefined})),
+                places: project.cartridge.places.map(p => ({uuid:p.uuid,name:p.name,description:p.uuid === project.cartridge.scenes.find(s => s.uuid === currentSceneId)?.placeId ? p.description : undefined})),
+                scenes: project.cartridge.scenes.map(s => ({uuid:s.uuid,title:s.title,placeId:s.placeId,characterIds:s.uuid===currentSceneId ? s.characterIds : undefined,prompt:s.uuid === currentSceneId ? s.prompt : undefined})),
+              },
+            } : undefined,
             context: {playerInput: input, catalog: [], stateReference: state,
               recentLines: baseLines.filter(line => line.text?.trim()).slice(-12).map(line => ({
                 role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
