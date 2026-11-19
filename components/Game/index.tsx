@@ -110,8 +110,19 @@ export default function Game({ actions }: { actions?: React.ReactNode }) {
           </div>
         )}
         <div className="relative w-full justify-center">
-          {currentPlaythrough && <GameStatusPanel state={visibleGameState} />}
-          {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_OPEN_A_OBSERVE === 'true' && currentPlaythrough && <OpenARecordsPanel sessionKey={String(currentPlaythrough.id)} />} 
+
+          {currentPlaythrough && (
+  <GameStatusPanel
+    state={visibleGameState}
+    fields={activeProject.settings.customStatusFields ?? []}
+  />
+)}
+{process.env.NODE_ENV === 'development' &&
+  process.env.NEXT_PUBLIC_OPEN_A_OBSERVE === 'true' &&
+  currentPlaythrough && (
+    <OpenARecordsPanel sessionKey={String(currentPlaythrough.id)} />
+  )}
+
           {process.env.NODE_ENV === 'development' && currentPlaythrough && (<><ABCDemoTrace />
               <ActionObserverPanel sessionKey={String(currentPlaythrough.id)} /></>)}
           {currentPlaythrough && (
