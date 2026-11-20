@@ -614,6 +614,7 @@ export function useStoryGenerator({
                 role: line.type === 'player' ? 'player' : line.type === 'character' ? 'npc' : 'narration', text: line.text.slice(0,4000),
               }))},
             history: stateLine?.metadata?.narrativeHistory ?? [],
+            sceneProgress:useGeneralABC?[...baseLines].reverse().map(line=>(line.metadata as {abcSceneProgress?:unknown}|undefined)?.abcSceneProgress).find(value=>value!==undefined):undefined,
             sceneId:currentSceneId,sceneTriggers:guardScene.triggers,lineCount:baseLines.length,
             sceneTurnHistory:useGeneralABC?getSceneLines(baseLines,currentSceneId).map(line=>({
               player:line.type==='player',activatedTriggerIds:line.metadata?.activatedTriggerIds??[],
@@ -638,7 +639,7 @@ export function useStoryGenerator({
         console.info('[ABC integration demo]', result);
         window.dispatchEvent(new CustomEvent('abc-demo-result', {detail:result}));
         const excludeFromContext = useGeneralABC && result.c.excludeFromContext === true;
-        const metadata = {abcExcludeFromContext:excludeFromContext,shouldPause:!result.shouldEnd, shouldEnd:result.shouldEnd===true, endingName:result.endingName, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
+        const metadata = {abcSceneProgress:useGeneralABC?result.sceneProgress:undefined,abcExcludeFromContext:excludeFromContext,shouldPause:!result.shouldEnd, shouldEnd:result.shouldEnd===true, endingName:result.endingName, narrativeState:result.after, narrativeHistory:result.history, stateIntegrityValid:true,gistMemory:result.gistMemory};
         const demoLines: DisplayLine[] = [
           {type:'player',text:input,characterName:playerCharacter.name,metadata:{shouldPause:false,activatedTriggerIds:useGeneralABC?result.trigger?.activatedIds:undefined}} as DisplayLine,
           {type:'character',text:result.c.dialogue,characterName:result.c.speaker,characterId:characters.find(c=>c.name===result.c.speaker)?.uuid,metadata:{shouldPause:false,abcExcludeFromContext:excludeFromContext}} as DisplayLine,
