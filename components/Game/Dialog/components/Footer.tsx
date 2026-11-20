@@ -12,8 +12,8 @@ export default function Footer({ currentLine }: { currentLine: DisplayLine }) {
   const status = currentLine.metadata?.status;
   const showThumbs = currentLine.type !== 'player';
 
-  // Don't show footer for scene breaks
-  if (currentLine.metadata?.sceneId !== undefined) {
+  // Hide the footer for continue-only scene breaks, not for input turns.
+  if (currentLine.metadata?.sceneId !== undefined && !currentLine.metadata.shouldPause) {
     return null;
   }
 
