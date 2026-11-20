@@ -183,7 +183,8 @@ export default function Game({ actions }: { actions?: React.ReactNode }) {
             {status === 'game-over' ? (
               <EndBreak currentLine={currentLine} setShowHistory={() => handleShowHistory(true)} />
             ) : (
-              currentLine.metadata?.sceneId !== undefined && (
+              // ABC can mark the destination and pause for input on the same line.
+              currentLine.metadata?.sceneId !== undefined && !currentLine.metadata.shouldPause && (
                 <SceneBreak handleNext={storyState.handleNext} currentLine={currentLine} />
               )
             )}
