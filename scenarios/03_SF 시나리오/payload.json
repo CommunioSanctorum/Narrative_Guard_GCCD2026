@@ -1,0 +1,348 @@
+{
+    "project": {
+        "id": 12,
+        "title": "SF 시나리오",
+        "updatedAt": 1795084621759,
+        "userId": "local-user",
+        "createdAt": 1795084194000,
+        "cartridge": {
+            "scenes": [
+                {
+                    "uuid": "sc-9p7tnzu2e04fxuge",
+                    "title": "Scene 1",
+                    "placeId": "pl-ekrjej1vhb7tfg66",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "붉은 비상등이 점멸하며 경고음이 울린다. 함선 AI의 음성이 들려온다. \"외벽 충돌 감지. 산소 잔량 15%. 기관실 주전력 복구가 시급합니다.\"",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [
+                        "ch-m3zdmttlns9591gl"
+                    ],
+                    "triggers": [
+                        {
+                            "uuid": "tr-9p7tnzu2e04fxuge-8fsiwfnqrvvkzp31",
+                            "narrative": "end the game(산소 고갈로 의식을 잃는다)",
+                            "type": "action",
+                            "condition": "산소가 다 떨어지면",
+                            "goToSceneId": "end",
+                            "endingName": "산소 고갈 엔딩",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-9p7tnzu2e04fxuge-zrmlr1m6fdnlosk2",
+                            "narrative": "Scene 2(함교)로 이동한다",
+                            "type": "action",
+                            "condition": "냉각수 누수를 막고 예비 퓨즈를 연결하면",
+                            "goToSceneId": "sc-pgw0hrultq6jl4dm",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "상황: 산소가 고갈되기 전에 냉각수 누수를 막고 주전력을 복구한다"
+                },
+                {
+                    "uuid": "sc-pgw0hrultq6jl4dm",
+                    "title": "",
+                    "placeId": "pl-pdgfuoogg3coq1fh",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "전력이 복구되며 닫혀 있던 함교의 격벽이 열린다. 깨진 강화유리 너머로 칠흑 같은 우주가 펼쳐져 있고, 통신 제어반에서 파란 대기 신호가 깜빡인다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [
+                        "ch-m3zdmttlns9591gl"
+                    ],
+                    "triggers": [
+                        {
+                            "uuid": "tr-pgw0hrultq6jl4dm-c6pugax722xcj4an",
+                            "narrative": "end the game (구조 성공 엔딩)",
+                            "type": "action",
+                            "condition": "통신 주파수를 맞추고 구조 신호를 발신하면",
+                            "goToSceneId": "end",
+                            "endingName": "구조 성공 엔딩",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-pgw0hrultq6jl4dm-vgimz7ct2r5h28wm",
+                            "narrative": "end the game(산소 고갈로 의식을 잃는다)",
+                            "type": "action",
+                            "condition": "산소가 다 떨어지면",
+                            "goToSceneId": "end",
+                            "endingName": "",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "복구된 전력을 이용해 외부 통신망을 가동하고 구조 신호를 보낸다"
+                }
+            ],
+            "characters": [
+                {
+                    "uuid": "ch-gb7t474seyuyxeh7",
+                    "name": "엔지니어",
+                    "description": "동면에서 일찍 깨어난 선원. 제한된 부품으로 생명 유지 장치를 수리해야 한다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-m3zdmttlns9591gl",
+                    "name": "함선 AI (마더)",
+                    "description": "감정이 없는 중앙 제어 컴퓨터. 현재 손상 부위와 남은 산소 시간을 냉정하게 보고한다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "places": [
+                {
+                    "uuid": "pl-ekrjej1vhb7tfg66",
+                    "name": "기관실",
+                    "description": "스파크가 튀고 냉각수가 새어 나오는 어두운 구역. 예비 퓨즈와 용접기가 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "pl-pdgfuoogg3coq1fh",
+                    "name": "함교",
+                    "description": "외부 통신 장치와 항법 제어반이 있는 우주선 최상층 구역.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "style": {
+                "prompt": "심우주에서 조난당한 화물 우주선을 배경으로 한 하드 SF 스릴러이다. 산소 잔량과 시스템 상태를 냉철하고 건조한 기계적 묘사와 긴박한 상황극으로 전달한다.",
+                "sref": ""
+            }
+        },
+        "settings": {
+            "shortDescription": "",
+            "longDescription": "",
+            "genre": "Adventure",
+            "visibility": "private",
+            "remixable": true,
+            "playerId": "ch-gb7t474seyuyxeh7",
+            "startingSceneId": "sc-9p7tnzu2e04fxuge",
+            "customStatusFields": [
+                {
+                    "key": "status_1795084229107",
+                    "label": "산소 잔여량",
+                    "type": "number",
+                    "initialValue": 1000,
+                    "visible": true,
+                    "min": 0,
+                    "max": 1000
+                }
+            ]
+        },
+        "version": "dramamancer-v1",
+        "totalLines": 4,
+        "totalLikes": 0,
+        "userDisplayName": "Local User"
+    },
+    "playthrough": {
+        "id": 47,
+        "projectId": 12,
+        "userId": "local-user",
+        "lines": [
+            {
+                "type": "narration",
+                "text": "",
+                "metadata": {
+                    "sceneId": "sc-9p7tnzu2e04fxuge",
+                    "shouldPause": false
+                }
+            },
+            {
+                "type": "narration",
+                "text": "붉은 비상등이 점멸하며 경고음이 울린다. 함선 AI의 음성이 들려온다. \"외벽 충돌 감지. 산소 잔량 15%. 기관실 주전력 복구가 시급합니다.\"",
+                "metadata": {
+                    "verbatim": true
+                }
+            }
+        ],
+        "currentLineIdx": 1,
+        "currentSceneId": "sc-9p7tnzu2e04fxuge",
+        "updatedAt": 1795096190879,
+        "projectSnapshot": {
+            "id": 12,
+            "title": "SF 시나리오",
+            "updatedAt": 1795084621759,
+            "userId": "local-user",
+            "createdAt": 1795084194000,
+            "cartridge": {
+                "scenes": [
+                    {
+                        "uuid": "sc-9p7tnzu2e04fxuge",
+                        "title": "Scene 1",
+                        "placeId": "pl-ekrjej1vhb7tfg66",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "붉은 비상등이 점멸하며 경고음이 울린다. 함선 AI의 음성이 들려온다. \"외벽 충돌 감지. 산소 잔량 15%. 기관실 주전력 복구가 시급합니다.\"",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [
+                            "ch-m3zdmttlns9591gl"
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "tr-9p7tnzu2e04fxuge-8fsiwfnqrvvkzp31",
+                                "narrative": "end the game(산소 고갈로 의식을 잃는다)",
+                                "type": "action",
+                                "condition": "산소가 다 떨어지면",
+                                "goToSceneId": "end",
+                                "endingName": "산소 고갈 엔딩",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-9p7tnzu2e04fxuge-zrmlr1m6fdnlosk2",
+                                "narrative": "Scene 2(함교)로 이동한다",
+                                "type": "action",
+                                "condition": "냉각수 누수를 막고 예비 퓨즈를 연결하면",
+                                "goToSceneId": "sc-pgw0hrultq6jl4dm",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "상황: 산소가 고갈되기 전에 냉각수 누수를 막고 주전력을 복구한다"
+                    },
+                    {
+                        "uuid": "sc-pgw0hrultq6jl4dm",
+                        "title": "",
+                        "placeId": "pl-pdgfuoogg3coq1fh",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "전력이 복구되며 닫혀 있던 함교의 격벽이 열린다. 깨진 강화유리 너머로 칠흑 같은 우주가 펼쳐져 있고, 통신 제어반에서 파란 대기 신호가 깜빡인다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [
+                            "ch-m3zdmttlns9591gl"
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "tr-pgw0hrultq6jl4dm-c6pugax722xcj4an",
+                                "narrative": "end the game (구조 성공 엔딩)",
+                                "type": "action",
+                                "condition": "통신 주파수를 맞추고 구조 신호를 발신하면",
+                                "goToSceneId": "end",
+                                "endingName": "구조 성공 엔딩",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-pgw0hrultq6jl4dm-vgimz7ct2r5h28wm",
+                                "narrative": "end the game(산소 고갈로 의식을 잃는다)",
+                                "type": "action",
+                                "condition": "산소가 다 떨어지면",
+                                "goToSceneId": "end",
+                                "endingName": "",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "복구된 전력을 이용해 외부 통신망을 가동하고 구조 신호를 보낸다"
+                    }
+                ],
+                "characters": [
+                    {
+                        "uuid": "ch-gb7t474seyuyxeh7",
+                        "name": "엔지니어",
+                        "description": "동면에서 일찍 깨어난 선원. 제한된 부품으로 생명 유지 장치를 수리해야 한다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-m3zdmttlns9591gl",
+                        "name": "함선 AI (마더)",
+                        "description": "감정이 없는 중앙 제어 컴퓨터. 현재 손상 부위와 남은 산소 시간을 냉정하게 보고한다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "places": [
+                    {
+                        "uuid": "pl-ekrjej1vhb7tfg66",
+                        "name": "기관실",
+                        "description": "스파크가 튀고 냉각수가 새어 나오는 어두운 구역. 예비 퓨즈와 용접기가 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "pl-pdgfuoogg3coq1fh",
+                        "name": "함교",
+                        "description": "외부 통신 장치와 항법 제어반이 있는 우주선 최상층 구역.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "prompt": "심우주에서 조난당한 화물 우주선을 배경으로 한 하드 SF 스릴러이다. 산소 잔량과 시스템 상태를 냉철하고 건조한 기계적 묘사와 긴박한 상황극으로 전달한다.",
+                    "sref": ""
+                }
+            },
+            "settings": {
+                "shortDescription": "",
+                "longDescription": "",
+                "genre": "Adventure",
+                "visibility": "private",
+                "remixable": true,
+                "playerId": "ch-gb7t474seyuyxeh7",
+                "startingSceneId": "sc-9p7tnzu2e04fxuge",
+                "customStatusFields": [
+                    {
+                        "key": "status_1795084229107",
+                        "label": "산소 잔여량",
+                        "type": "number",
+                        "initialValue": 1000,
+                        "visible": true,
+                        "min": 0,
+                        "max": 1000
+                    }
+                ]
+            },
+            "version": "dramamancer-v1",
+            "totalLines": 4,
+            "totalLikes": 0,
+            "userDisplayName": "Local User"
+        },
+        "liked": false,
+        "visibility": "public",
+        "createdAt": 1795096190000,
+        "title": null
+    },
+    "triggers": []
+}

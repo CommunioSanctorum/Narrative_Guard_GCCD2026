@@ -1,0 +1,316 @@
+{
+    "project": {
+        "id": 10,
+        "title": "모험/전투 시나리오",
+        "updatedAt": 1795071762607,
+        "userId": "local-user",
+        "createdAt": 1795071469000,
+        "cartridge": {
+            "scenes": [
+                {
+                    "uuid": "sc-kungatfosd934zdk",
+                    "title": "Scene 1",
+                    "placeId": "pl-e4hdbndry9z2dwua",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "자욱한 안개 너머로 고대 유적의 기운이 느껴진다. 발밑에는 질퍽한 늪지가 펼쳐져 있고, 동굴 입구는 보이지 않는다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [],
+                    "triggers": [
+                        {
+                            "uuid": "tr-kungatfosd934zdk-itp0xwfsd8s9jzap",
+                            "narrative": "Scene 2(수정 동굴)로 이동한다",
+                            "type": "action",
+                            "condition": "덩굴을 제거하고 동굴 입구를 발견하면",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-kungatfosd934zdk-oehze900bsfrz8qy",
+                            "narrative": "체력이 감소한다",
+                            "type": "action",
+                            "condition": "함정이나 독초에 당하는 등 피해를 입으면 ",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "상황: 모험가가 늪과 독초를 피해 동굴 입구를 찾는다"
+                },
+                {
+                    "uuid": "sc-bn5qtkxx52a6y52y",
+                    "title": "",
+                    "placeId": "pl-54wnj6ms830dhhox",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "동굴 깊숙한 곳, 찬란한 황금 성배가 제단 위에 놓여 있다. 그 순간 땅이 울리며 거대한 돌 골렘이 눈을 뜬다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [
+                        "ch-lyy0t4sk9ipqb4tp"
+                    ],
+                    "triggers": [
+                        {
+                            "uuid": "tr-bn5qtkxx52a6y52y-c1lxhn7ucaqz4r32",
+                            "narrative": "end the game (보물 획득 엔딩)",
+                            "type": "action",
+                            "condition": "황금 성배를 손에 넣고 동굴을 빠져나가면",
+                            "goToSceneId": "end",
+                            "endingName": "보물 획득 엔딩",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-bn5qtkxx52a6y52y-jw165098v0bjmcse",
+                            "narrative": "end the game (실패 엔딩)",
+                            "type": "action",
+                            "condition": "시간이 너무 오래 끌려 동굴이 붕괴하거나 체력이 0이 되면",
+                            "goToSceneId": "end",
+                            "endingName": "실패 엔딩",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "골렘을 따돌리거나 쓰러뜨리고 제단 위의 보물을 획득한다"
+                }
+            ],
+            "characters": [
+                {
+                    "uuid": "ch-k8ucyxzjd0dnquc4",
+                    "name": "모험가",
+                    "description": "고대 문명의 보물을 찾아 떠나는 숙련된 탐험가.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-lyy0t4sk9ipqb4tp",
+                    "name": "동굴 수호자 (골렘)",
+                    "description": "보물 방을 지키는 거대한 돌 거인. 물리 공격에는 강하지만 빛이나 마법 문양에 약하다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "places": [
+                {
+                    "uuid": "pl-e4hdbndry9z2dwua",
+                    "name": "안개 낀 숲",
+                    "description": "거대한 고목들이 얽혀 있고 독초와 늪이 도사리는 숲. 동굴로 향하는 입구가 숨겨져 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "pl-54wnj6ms830dhhox",
+                    "name": "수정 동굴",
+                    "description": "푸른 수정이 빛나는 지하 동굴. 깊은 협곡과 고대 함정이 설치되어 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "style": {
+                "prompt": "고대 유적과 신비한 자연이 공존하는 판타지 세계이다. 플레이어의 선택에 따라 환경의 변화와 함정, 전투를 생동감 있고 역동적으로 서술한다.",
+                "sref": ""
+            }
+        },
+        "settings": {
+            "shortDescription": "",
+            "longDescription": "",
+            "genre": "Adventure",
+            "visibility": "private",
+            "remixable": true,
+            "playerId": "ch-k8ucyxzjd0dnquc4",
+            "startingSceneId": "sc-kungatfosd934zdk"
+        },
+        "version": "dramamancer-v1",
+        "totalLines": 3,
+        "totalLikes": 0,
+        "userDisplayName": "Local User"
+    },
+    "playthrough": {
+        "id": 49,
+        "projectId": 10,
+        "userId": "local-user",
+        "lines": [
+            {
+                "type": "narration",
+                "text": "",
+                "metadata": {
+                    "sceneId": "sc-kungatfosd934zdk",
+                    "shouldPause": false
+                }
+            },
+            {
+                "type": "narration",
+                "text": "자욱한 안개 너머로 고대 유적의 기운이 느껴진다. 발밑에는 질퍽한 늪지가 펼쳐져 있고, 동굴 입구는 보이지 않는다.",
+                "metadata": {
+                    "verbatim": true
+                }
+            }
+        ],
+        "currentLineIdx": 1,
+        "currentSceneId": "sc-kungatfosd934zdk",
+        "updatedAt": 1795096295180,
+        "projectSnapshot": {
+            "id": 10,
+            "title": "모험/전투 시나리오",
+            "updatedAt": 1795071762607,
+            "userId": "local-user",
+            "createdAt": 1795071469000,
+            "cartridge": {
+                "scenes": [
+                    {
+                        "uuid": "sc-kungatfosd934zdk",
+                        "title": "Scene 1",
+                        "placeId": "pl-e4hdbndry9z2dwua",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "자욱한 안개 너머로 고대 유적의 기운이 느껴진다. 발밑에는 질퍽한 늪지가 펼쳐져 있고, 동굴 입구는 보이지 않는다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [],
+                        "triggers": [
+                            {
+                                "uuid": "tr-kungatfosd934zdk-itp0xwfsd8s9jzap",
+                                "narrative": "Scene 2(수정 동굴)로 이동한다",
+                                "type": "action",
+                                "condition": "덩굴을 제거하고 동굴 입구를 발견하면",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-kungatfosd934zdk-oehze900bsfrz8qy",
+                                "narrative": "체력이 감소한다",
+                                "type": "action",
+                                "condition": "함정이나 독초에 당하는 등 피해를 입으면 ",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "상황: 모험가가 늪과 독초를 피해 동굴 입구를 찾는다"
+                    },
+                    {
+                        "uuid": "sc-bn5qtkxx52a6y52y",
+                        "title": "",
+                        "placeId": "pl-54wnj6ms830dhhox",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "동굴 깊숙한 곳, 찬란한 황금 성배가 제단 위에 놓여 있다. 그 순간 땅이 울리며 거대한 돌 골렘이 눈을 뜬다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [
+                            "ch-lyy0t4sk9ipqb4tp"
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "tr-bn5qtkxx52a6y52y-c1lxhn7ucaqz4r32",
+                                "narrative": "end the game (보물 획득 엔딩)",
+                                "type": "action",
+                                "condition": "황금 성배를 손에 넣고 동굴을 빠져나가면",
+                                "goToSceneId": "end",
+                                "endingName": "보물 획득 엔딩",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-bn5qtkxx52a6y52y-jw165098v0bjmcse",
+                                "narrative": "end the game (실패 엔딩)",
+                                "type": "action",
+                                "condition": "시간이 너무 오래 끌려 동굴이 붕괴하거나 체력이 0이 되면",
+                                "goToSceneId": "end",
+                                "endingName": "실패 엔딩",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "골렘을 따돌리거나 쓰러뜨리고 제단 위의 보물을 획득한다"
+                    }
+                ],
+                "characters": [
+                    {
+                        "uuid": "ch-k8ucyxzjd0dnquc4",
+                        "name": "모험가",
+                        "description": "고대 문명의 보물을 찾아 떠나는 숙련된 탐험가.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-lyy0t4sk9ipqb4tp",
+                        "name": "동굴 수호자 (골렘)",
+                        "description": "보물 방을 지키는 거대한 돌 거인. 물리 공격에는 강하지만 빛이나 마법 문양에 약하다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "places": [
+                    {
+                        "uuid": "pl-e4hdbndry9z2dwua",
+                        "name": "안개 낀 숲",
+                        "description": "거대한 고목들이 얽혀 있고 독초와 늪이 도사리는 숲. 동굴로 향하는 입구가 숨겨져 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "pl-54wnj6ms830dhhox",
+                        "name": "수정 동굴",
+                        "description": "푸른 수정이 빛나는 지하 동굴. 깊은 협곡과 고대 함정이 설치되어 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "prompt": "고대 유적과 신비한 자연이 공존하는 판타지 세계이다. 플레이어의 선택에 따라 환경의 변화와 함정, 전투를 생동감 있고 역동적으로 서술한다.",
+                    "sref": ""
+                }
+            },
+            "settings": {
+                "shortDescription": "",
+                "longDescription": "",
+                "genre": "Adventure",
+                "visibility": "private",
+                "remixable": true,
+                "playerId": "ch-k8ucyxzjd0dnquc4",
+                "startingSceneId": "sc-kungatfosd934zdk"
+            },
+            "version": "dramamancer-v1",
+            "totalLines": 3,
+            "totalLikes": 0,
+            "userDisplayName": "Local User"
+        },
+        "liked": false,
+        "visibility": "public",
+        "createdAt": 1795096295000,
+        "title": null
+    },
+    "triggers": []
+}
