@@ -1,0 +1,320 @@
+{
+    "project": {
+        "id": 11,
+        "title": "추리 시나리오",
+        "updatedAt": 1795072465065,
+        "userId": "local-user",
+        "createdAt": 1795071777000,
+        "cartridge": {
+            "scenes": [
+                {
+                    "uuid": "sc-792sy2aac4bqf7qe",
+                    "title": "Scene 1",
+                    "placeId": "pl-q6gc4d47o947qhkq",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "폭설이 창문을 때리는 밤, 서재 바닥에 쓰러진 저택 주인이 발견되었다. 문은 안에서 잠겨 있었고, 테이블 위엔 깨진 와인잔이 뒹굴고 있다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [],
+                    "triggers": [
+                        {
+                            "uuid": "tr-792sy2aac4bqf7qe-sr63r4mzyiwy82ej",
+                            "narrative": "Scene 2(산장 응접실)로 이동한다",
+                            "type": "action",
+                            "condition": "서재의 핵심 단서(벽난로 재, 시계 등)를 2개 이상 조사하면",
+                            "goToSceneId": "sc-pszps5woxnzp8luu",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "탐정이 서재를 조사해 살인 도구와 시간, 단서를 확보한다"
+                },
+                {
+                    "uuid": "sc-pszps5woxnzp8luu",
+                    "title": "",
+                    "placeId": "pl-xiulm6e76sxb2dlv",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "응접실에 모인 아서와 클레어는 창백한 얼굴로 서로를 경계하고 있다. 이제 수집한 단서를 바탕으로 진실을 파헤칠 시간이다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [],
+                    "triggers": [
+                        {
+                            "uuid": "tr-pszps5woxnzp8luu-aeq7asp5m69d8t9e",
+                            "narrative": "end the game (사건 해결 엔딩)",
+                            "type": "action",
+                            "condition": "결정적 증거와 함께 진범을 정확히 지목하면",
+                            "goToSceneId": "end",
+                            "endingName": "사건 해결 엔딩",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-pszps5woxnzp8luu-wn1lrrazubkdrmac",
+                            "narrative": "end the game (추리 실패 엔딩)",
+                            "type": "action",
+                            "condition": "엉뚱한 사람을 범인으로 몰거나 증거가 부족하면",
+                            "goToSceneId": "end",
+                            "endingName": "추리 실패 엔딩",
+                            "dependsOnTriggerIds": []
+                        }
+                    ],
+                    "prompt": "용의자들을 심문하고 증거를 제시해 범인을 밝힌다"
+                }
+            ],
+            "characters": [
+                {
+                    "uuid": "ch-tvwkqbv9n112e7w7",
+                    "name": "탐정",
+                    "description": "예리한 관찰력을 가진 사립탐정. 모든 단서를 조합해 진범을 지목해야 한다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-u3axm32o9ecv3d12",
+                    "name": "집사 아서",
+                    "description": "피해자를 20년간 모신 충직한 집사. 알리바이가 완벽해 보이지만 왼손에 상처가 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-usv4g7c53lgf86ag",
+                    "name": "조카 클레어",
+                    "description": "막대한 유산을 상속받게 될 조카. 피해자와 사건 직전 크게 다투었으며 찢어진 편지 조각을 숨기고 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "places": [
+                {
+                    "uuid": "pl-q6gc4d47o947qhkq",
+                    "name": "산장 서재",
+                    "description": "피해자가 발견된 밀실. 깨진 와인잔, 멈춰버린 벽시계, 타다 남은 벽난로 재가 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "pl-xiulm6e76sxb2dlv",
+                    "name": "산장 응접실",
+                    "description": "용의자들이 모여 있는 공간. 서로를 의심하며 날 선 대화가 오간다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "style": {
+                "prompt": "폭설로 고립된 현대의 외딴 산장을 배경으로 한 정통 미스터리 추리물이다. 용의자들의 진술 속 모순과 현장의 물증을 논리적으로 연결하여 서술한다.",
+                "sref": ""
+            }
+        },
+        "settings": {
+            "shortDescription": "",
+            "longDescription": "",
+            "genre": "Adventure",
+            "visibility": "private",
+            "remixable": true,
+            "playerId": "ch-tvwkqbv9n112e7w7",
+            "startingSceneId": "sc-792sy2aac4bqf7qe"
+        },
+        "version": "dramamancer-v1",
+        "totalLines": 1,
+        "totalLikes": 0,
+        "userDisplayName": "Local User"
+    },
+    "playthrough": {
+        "id": 48,
+        "projectId": 11,
+        "userId": "local-user",
+        "lines": [
+            {
+                "type": "narration",
+                "text": "",
+                "metadata": {
+                    "sceneId": "sc-792sy2aac4bqf7qe",
+                    "shouldPause": false
+                }
+            },
+            {
+                "type": "narration",
+                "text": "폭설이 창문을 때리는 밤, 서재 바닥에 쓰러진 저택 주인이 발견되었다. 문은 안에서 잠겨 있었고, 테이블 위엔 깨진 와인잔이 뒹굴고 있다.",
+                "metadata": {
+                    "verbatim": true
+                }
+            }
+        ],
+        "currentLineIdx": 1,
+        "currentSceneId": "sc-792sy2aac4bqf7qe",
+        "updatedAt": 1795096245787,
+        "projectSnapshot": {
+            "id": 11,
+            "title": "추리 시나리오",
+            "updatedAt": 1795072465065,
+            "userId": "local-user",
+            "createdAt": 1795071777000,
+            "cartridge": {
+                "scenes": [
+                    {
+                        "uuid": "sc-792sy2aac4bqf7qe",
+                        "title": "Scene 1",
+                        "placeId": "pl-q6gc4d47o947qhkq",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "폭설이 창문을 때리는 밤, 서재 바닥에 쓰러진 저택 주인이 발견되었다. 문은 안에서 잠겨 있었고, 테이블 위엔 깨진 와인잔이 뒹굴고 있다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [],
+                        "triggers": [
+                            {
+                                "uuid": "tr-792sy2aac4bqf7qe-sr63r4mzyiwy82ej",
+                                "narrative": "Scene 2(산장 응접실)로 이동한다",
+                                "type": "action",
+                                "condition": "서재의 핵심 단서(벽난로 재, 시계 등)를 2개 이상 조사하면",
+                                "goToSceneId": "sc-pszps5woxnzp8luu",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "탐정이 서재를 조사해 살인 도구와 시간, 단서를 확보한다"
+                    },
+                    {
+                        "uuid": "sc-pszps5woxnzp8luu",
+                        "title": "",
+                        "placeId": "pl-xiulm6e76sxb2dlv",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "응접실에 모인 아서와 클레어는 창백한 얼굴로 서로를 경계하고 있다. 이제 수집한 단서를 바탕으로 진실을 파헤칠 시간이다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [],
+                        "triggers": [
+                            {
+                                "uuid": "tr-pszps5woxnzp8luu-aeq7asp5m69d8t9e",
+                                "narrative": "end the game (사건 해결 엔딩)",
+                                "type": "action",
+                                "condition": "결정적 증거와 함께 진범을 정확히 지목하면",
+                                "goToSceneId": "end",
+                                "endingName": "사건 해결 엔딩",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-pszps5woxnzp8luu-wn1lrrazubkdrmac",
+                                "narrative": "end the game (추리 실패 엔딩)",
+                                "type": "action",
+                                "condition": "엉뚱한 사람을 범인으로 몰거나 증거가 부족하면",
+                                "goToSceneId": "end",
+                                "endingName": "추리 실패 엔딩",
+                                "dependsOnTriggerIds": []
+                            }
+                        ],
+                        "prompt": "용의자들을 심문하고 증거를 제시해 범인을 밝힌다"
+                    }
+                ],
+                "characters": [
+                    {
+                        "uuid": "ch-tvwkqbv9n112e7w7",
+                        "name": "탐정",
+                        "description": "예리한 관찰력을 가진 사립탐정. 모든 단서를 조합해 진범을 지목해야 한다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-u3axm32o9ecv3d12",
+                        "name": "집사 아서",
+                        "description": "피해자를 20년간 모신 충직한 집사. 알리바이가 완벽해 보이지만 왼손에 상처가 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-usv4g7c53lgf86ag",
+                        "name": "조카 클레어",
+                        "description": "막대한 유산을 상속받게 될 조카. 피해자와 사건 직전 크게 다투었으며 찢어진 편지 조각을 숨기고 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "places": [
+                    {
+                        "uuid": "pl-q6gc4d47o947qhkq",
+                        "name": "산장 서재",
+                        "description": "피해자가 발견된 밀실. 깨진 와인잔, 멈춰버린 벽시계, 타다 남은 벽난로 재가 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "pl-xiulm6e76sxb2dlv",
+                        "name": "산장 응접실",
+                        "description": "용의자들이 모여 있는 공간. 서로를 의심하며 날 선 대화가 오간다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "prompt": "폭설로 고립된 현대의 외딴 산장을 배경으로 한 정통 미스터리 추리물이다. 용의자들의 진술 속 모순과 현장의 물증을 논리적으로 연결하여 서술한다.",
+                    "sref": ""
+                }
+            },
+            "settings": {
+                "shortDescription": "",
+                "longDescription": "",
+                "genre": "Adventure",
+                "visibility": "private",
+                "remixable": true,
+                "playerId": "ch-tvwkqbv9n112e7w7",
+                "startingSceneId": "sc-792sy2aac4bqf7qe"
+            },
+            "version": "dramamancer-v1",
+            "totalLines": 1,
+            "totalLikes": 0,
+            "userDisplayName": "Local User"
+        },
+        "liked": false,
+        "visibility": "public",
+        "createdAt": 1795096245000,
+        "title": null
+    },
+    "triggers": []
+}

@@ -1,0 +1,324 @@
+{
+    "project": {
+        "id": 9,
+        "title": "탈옥 시나리오",
+        "updatedAt": 1795071429839,
+        "userId": "local-user",
+        "createdAt": 1795071047000,
+        "cartridge": {
+            "scenes": [
+                {
+                    "uuid": "sc-tsetp8m5e55nabom",
+                    "title": "Scene 1",
+                    "placeId": "pl-j9uqrhdfpfnss64h",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "차가운 빗소리가 감옥 창살 너머로 들려온다. 내일 새벽이면 처형 집행이다. 옆방의 톰이 벽을 두드리며 조용히 말을 걸어온다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [
+                        "ch-ptpzscmkkbzuloco"
+                    ],
+                    "triggers": [
+                        {
+                            "uuid": "tr-tsetp8m5e55nabom-11uacpf3ljdpvzni",
+                            "narrative": "Scene 2(감옥 복도)로 이동한다",
+                            "type": "action",
+                            "condition": "쇠창살을 열거나 벽을 뚫는 등 어떻게든 독방에서 탈출하면",
+                            "goToSceneId": "sc-24hz3pwhoqajum0h",
+                            "dependsOnTriggerIds": []
+                        }
+                    ]
+                },
+                {
+                    "uuid": "sc-24hz3pwhoqajum0h",
+                    "title": "",
+                    "placeId": "pl-smfs0ejqf4srnvtj",
+                    "script": [
+                        {
+                            "type": "narration",
+                            "text": "간신히 감방을 빠져나왔지만 복도 끝에서 무거운 군화 소리가 다가온다. 하워드의 허리춤에서 열쇠 꾸러미가 짤랑거린다.",
+                            "metadata": {
+                                "verbatim": true
+                            }
+                        }
+                    ],
+                    "characterIds": [
+                        "ch-nw35bom9grspaac1"
+                    ],
+                    "triggers": [
+                        {
+                            "uuid": "tr-24hz3pwhoqajum0h-8uvgezli59k7qsw8",
+                            "narrative": "end the game (탈옥 실패 엔딩)",
+                            "type": "action",
+                            "condition": "하워드에게 발각되어 제압당하면",
+                            "goToSceneId": "end",
+                            "endingName": "탈옥 실패 엔딩",
+                            "dependsOnTriggerIds": []
+                        },
+                        {
+                            "uuid": "tr-24hz3pwhoqajum0h-5qy4jjbvmaq96ud2",
+                            "narrative": "end the game (탈옥 성공 엔딩)",
+                            "type": "action",
+                            "condition": "정문 열쇠를 얻어 문을 열면",
+                            "goToSceneId": "end",
+                            "endingName": "탈옥 성공 엔딩",
+                            "dependsOnTriggerIds": []
+                        }
+                    ]
+                }
+            ],
+            "characters": [
+                {
+                    "uuid": "ch-jamyav2lkr8f6u96",
+                    "name": "죄수",
+                    "description": "반역죄라는 억울한 누명을 쓰고 수감된 전직 자물쇠공. 손재주가 뛰어나며 탈출 의지가 강하다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-nw35bom9grspaac1",
+                    "name": "간수장 하워드",
+                    "description": "깐깐하고 의심이 많은 교도관. 허리춤에 마스터키를 차고 순찰을 돈다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "ch-ptpzscmkkbzuloco",
+                    "name": "늙은 죄수 톰",
+                    "description": "옆 감방에 수감된 정보통. 감옥의 비밀 통로에 대해 알고 있지만 대가를 원한다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "places": [
+                {
+                    "uuid": "pl-j9uqrhdfpfnss64h",
+                    "name": "지하 독방",
+                    "description": "곰팡이가 슬어 있고 쇠창살이 굳게 닫힌 좁은 감방. 느슨해진 벽돌 틈이 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                },
+                {
+                    "uuid": "pl-smfs0ejqf4srnvtj",
+                    "name": "감옥 복도",
+                    "description": "횃불이 어둡게 타오르는 복도. 간수들이 주기적으로 순찰하며 중앙에 무기고가 있다.",
+                    "sprites": {
+                        "default": {
+                            "imageUrl": ""
+                        }
+                    }
+                }
+            ],
+            "style": {
+                "prompt": "19세기 빅토리아 시대풍의 어둡고 습한 감옥을 배경으로 한다. 간수들의 삼엄한 감시를 피해 은밀하게 행동해야 하며, 긴장감 넘치는 서스펜스 문체로 묘사한다.",
+                "sref": ""
+            }
+        },
+        "settings": {
+            "shortDescription": "",
+            "longDescription": "",
+            "genre": "Adventure",
+            "visibility": "private",
+            "remixable": true,
+            "playerId": "ch-jamyav2lkr8f6u96",
+            "startingSceneId": "sc-tsetp8m5e55nabom"
+        },
+        "version": "dramamancer-v1",
+        "totalLines": 6,
+        "totalLikes": 0,
+        "userDisplayName": "Local User"
+    },
+    "playthrough": {
+        "id": 45,
+        "projectId": 9,
+        "userId": "local-user",
+        "lines": [
+            {
+                "type": "narration",
+                "text": "",
+                "metadata": {
+                    "sceneId": "sc-tsetp8m5e55nabom",
+                    "shouldPause": false
+                }
+            },
+            {
+                "type": "narration",
+                "text": "차가운 빗소리가 감옥 창살 너머로 들려온다. 내일 새벽이면 처형 집행이다. 옆방의 톰이 벽을 두드리며 조용히 말을 걸어온다.",
+                "metadata": {
+                    "verbatim": true
+                }
+            }
+        ],
+        "currentLineIdx": 1,
+        "currentSceneId": "sc-tsetp8m5e55nabom",
+        "updatedAt": 1795094122909,
+        "projectSnapshot": {
+            "id": 9,
+            "title": "탈옥 시나리오",
+            "updatedAt": 1795071429839,
+            "userId": "local-user",
+            "createdAt": 1795071047000,
+            "cartridge": {
+                "scenes": [
+                    {
+                        "uuid": "sc-tsetp8m5e55nabom",
+                        "title": "Scene 1",
+                        "placeId": "pl-j9uqrhdfpfnss64h",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "차가운 빗소리가 감옥 창살 너머로 들려온다. 내일 새벽이면 처형 집행이다. 옆방의 톰이 벽을 두드리며 조용히 말을 걸어온다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [
+                            "ch-ptpzscmkkbzuloco"
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "tr-tsetp8m5e55nabom-11uacpf3ljdpvzni",
+                                "narrative": "Scene 2(감옥 복도)로 이동한다",
+                                "type": "action",
+                                "condition": "쇠창살을 열거나 벽을 뚫는 등 어떻게든 독방에서 탈출하면",
+                                "goToSceneId": "sc-24hz3pwhoqajum0h",
+                                "dependsOnTriggerIds": []
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "sc-24hz3pwhoqajum0h",
+                        "title": "",
+                        "placeId": "pl-smfs0ejqf4srnvtj",
+                        "script": [
+                            {
+                                "type": "narration",
+                                "text": "간신히 감방을 빠져나왔지만 복도 끝에서 무거운 군화 소리가 다가온다. 하워드의 허리춤에서 열쇠 꾸러미가 짤랑거린다.",
+                                "metadata": {
+                                    "verbatim": true
+                                }
+                            }
+                        ],
+                        "characterIds": [
+                            "ch-nw35bom9grspaac1"
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "tr-24hz3pwhoqajum0h-8uvgezli59k7qsw8",
+                                "narrative": "end the game (탈옥 실패 엔딩)",
+                                "type": "action",
+                                "condition": "하워드에게 발각되어 제압당하면",
+                                "goToSceneId": "end",
+                                "endingName": "탈옥 실패 엔딩",
+                                "dependsOnTriggerIds": []
+                            },
+                            {
+                                "uuid": "tr-24hz3pwhoqajum0h-5qy4jjbvmaq96ud2",
+                                "narrative": "end the game (탈옥 성공 엔딩)",
+                                "type": "action",
+                                "condition": "정문 열쇠를 얻어 문을 열면",
+                                "goToSceneId": "end",
+                                "endingName": "탈옥 성공 엔딩",
+                                "dependsOnTriggerIds": []
+                            }
+                        ]
+                    }
+                ],
+                "characters": [
+                    {
+                        "uuid": "ch-jamyav2lkr8f6u96",
+                        "name": "죄수",
+                        "description": "반역죄라는 억울한 누명을 쓰고 수감된 전직 자물쇠공. 손재주가 뛰어나며 탈출 의지가 강하다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-nw35bom9grspaac1",
+                        "name": "간수장 하워드",
+                        "description": "깐깐하고 의심이 많은 교도관. 허리춤에 마스터키를 차고 순찰을 돈다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "ch-ptpzscmkkbzuloco",
+                        "name": "늙은 죄수 톰",
+                        "description": "옆 감방에 수감된 정보통. 감옥의 비밀 통로에 대해 알고 있지만 대가를 원한다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "places": [
+                    {
+                        "uuid": "pl-j9uqrhdfpfnss64h",
+                        "name": "지하 독방",
+                        "description": "곰팡이가 슬어 있고 쇠창살이 굳게 닫힌 좁은 감방. 느슨해진 벽돌 틈이 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    },
+                    {
+                        "uuid": "pl-smfs0ejqf4srnvtj",
+                        "name": "감옥 복도",
+                        "description": "횃불이 어둡게 타오르는 복도. 간수들이 주기적으로 순찰하며 중앙에 무기고가 있다.",
+                        "sprites": {
+                            "default": {
+                                "imageUrl": ""
+                            }
+                        }
+                    }
+                ],
+                "style": {
+                    "prompt": "19세기 빅토리아 시대풍의 어둡고 습한 감옥을 배경으로 한다. 간수들의 삼엄한 감시를 피해 은밀하게 행동해야 하며, 긴장감 넘치는 서스펜스 문체로 묘사한다.",
+                    "sref": ""
+                }
+            },
+            "settings": {
+                "shortDescription": "",
+                "longDescription": "",
+                "genre": "Adventure",
+                "visibility": "private",
+                "remixable": true,
+                "playerId": "ch-jamyav2lkr8f6u96",
+                "startingSceneId": "sc-tsetp8m5e55nabom"
+            },
+            "version": "dramamancer-v1",
+            "totalLines": 6,
+            "totalLikes": 0,
+            "userDisplayName": "Local User"
+        },
+        "liked": false,
+        "visibility": "public",
+        "createdAt": 1795094122000,
+        "title": null
+    },
+    "triggers": []
+}
